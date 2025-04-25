@@ -1,130 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<div>
+    {{-- Be like water. --}}
 
-        <title>InfoSec Protection Plans | Premium Cybersecurity Solutions</title>
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
-        
-        <!-- Font Awesome -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        <!-- Styles -->
-        @livewireStyles
-    </head>
-    <body class="font-sans antialiased bg-gray-50 text-gray-900">
-      
-
-
-
-
-    
-    <!-- Top promo bar -->
-    <div class="bg-gradient-to-r from-[#C40F12] to-[#FF4447] text-white text-center text-sm py-3 px-4 relative overflow-hidden">
-        <div class="relative z-10">
-            <span class="font-semibold">Limited Time Offer:</span> Save 20% on all security packages with code <span class="bg-white bg-opacity-20 px-2 py-1 rounded font-mono font-bold">SECURE20</span>
-        </div>
-        <div class="absolute top-0 right-0 opacity-10">
-            <i class="fas fa-shield-alt text-8xl"></i>
-        </div>
-    </div>
-
-    <!-- Navbar -->
-    <div class="sticky top-0 z-50 bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between px-4 md:px-6 py-4">
-                <div class="flex items-center">
-                    <div class="text-xl font-bold text-[#C40F12] mr-8">
-                        <img src="{{ asset('/creditInfoLogo.svg') }}" alt="InfoSec Company Logo" class="h-8" />
-                    </div>
-                    
-                    <ul class="hidden lg:flex space-x-8 text-gray-700 text-sm font-medium">
-                        <li><a href="#" class="hover:text-[#C40F12] transition py-2 border-b-2 border-transparent hover:border-[#C40F12]">Services</a></li>
-                        <li><a href="#" class="hover:text-[#C40F12] transition py-2 border-b-2 border-transparent hover:border-[#C40F12]">Solutions</a></li>
-                        <li><a href="#" class="hover:text-[#C40F12] transition py-2 border-b-2 border-[#C40F12]">Pricing</a></li>
-                        <li><a href="#" class="hover:text-[#C40F12] transition py-2 border-b-2 border-transparent hover:border-[#C40F12]">About Us</a></li>
-                        <li><a href="#" class="hover:text-[#C40F12] transition py-2 border-b-2 border-transparent hover:border-[#C40F12]">Resources</a></li>
-                    </ul>
-                </div>
-                
-                <div class="hidden lg:flex items-center space-x-4">
-                    <a href="#" class="text-gray-700 hover:text-[#C40F12] transition">
-                        <i class="fas fa-search text-lg"></i>
-                    </a>
-                    <div class="border-l border-gray-300 h-6 mx-2"></div>
-                    <a href="#" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-[#C40F12] transition">Login</a>
-                    <a href="#" class="px-4 py-2 text-sm font-medium text-white bg-[#C40F12] rounded-md hover:bg-[#A00D10] transition shadow-sm hover:shadow">Register</a>
-                </div>
-                
-                <button class="lg:hidden text-gray-700" id="mobileMenuButton">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Mobile menu -->
-        <div class="lg:hidden hidden bg-white border-t border-gray-100 shadow-lg" id="mobileMenu">
-            <div class="max-w-7xl mx-auto px-4 py-3">
-                <ul class="flex flex-col space-y-3 text-gray-700 text-sm font-medium mb-6">
-                    <li><a href="#" class="block py-2 hover:text-[#C40F12]">Services</a></li>
-                    <li><a href="#" class="block py-2 hover:text-[#C40F12]">Solutions</a></li>
-                    <li><a href="#" class="block py-2 text-[#C40F12] font-semibold">Pricing</a></li>
-                    <li><a href="#" class="block py-2 hover:text-[#C40F12]">About Us</a></li>
-                    <li><a href="#" class="block py-2 hover:text-[#C40F12]">Resources</a></li>
-                </ul>
-                <div class="flex space-x-3">
-                    <a href="#" class="flex-1 px-4 py-3 text-sm font-medium text-center text-gray-700 border border-gray-300 rounded-md hover:text-[#C40F12] hover:border-[#C40F12] transition">Login</a>
-                    <a href="#" class="flex-1 px-4 py-3 text-sm font-medium text-center text-white bg-[#C40F12] rounded-md hover:bg-[#A00D10] transition shadow-sm">Register</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-   <!-- Hero Section -->
-<div class="bg-gradient-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0 bg-[url('/pattern-bg.svg')] bg-repeat"></div>
-    </div>
-    <div class="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
-        <div class="max-w-3xl">
-            <div class="inline-block bg-[#C40F12] bg-opacity-20 text-[#FF8A8C] px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                <i class="fas fa-tag mr-2"></i> Transparent Pricing
-            </div>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Statement Processing That <span class="text-[#FF8A8C]">Scales</span> With Your Institution
-            </h1>
-            <p class="text-xl text-gray-300 mb-8 leading-relaxed">
-                Optimize your statement processing costs with our tiered pricing structure designed for financial institutions of all sizes. Choose the plan that best fits your transaction volume and budget.
-            </p>
-            <div class="flex flex-wrap gap-4">
-                <a href="#pricing-plans" class="px-6 py-3 bg-[#C40F12] hover:bg-[#A00D10] rounded-md text-white font-medium transition shadow-md hover:shadow-lg">
-                    View Pricing Plans
-                </a>
-                <a href="#" class="px-6 py-3 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-md text-white font-medium transition border border-white border-opacity-20">
-                    Schedule a Demo
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Wave Divider -->
-    <div class="text-gray-50">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" fill="currentColor" preserveAspectRatio="none">
-            <path d="M0,0L48,5.3C96,11,192,21,288,32C384,43,480,53,576,48C672,43,768,21,864,16C960,11,1056,21,1152,26.7C1248,32,1344,32,1392,32L1440,32L1440,80L1392,80C1344,80,1248,80,1152,80C1056,80,960,80,864,80C768,80,672,80,576,80C480,80,384,80,288,80C192,80,96,80,48,80L0,80Z"></path>
-        </svg>
-    </div>
-</div>
-
-<!-- Pricing Toggle Section -->
-<div class="max-w-6xl mx-auto px-4 pt-8 pb-4">
+    <div class="max-w-6xl mx-auto px-4 pt-8 pb-4">
     <div class="flex justify-center">
         <div class="bg-white rounded-full shadow-md px-1 py-1 inline-flex">
             <button class="px-6 py-2 rounded-full bg-[#C40F12] text-white font-medium text-sm">Monthly</button>
@@ -179,10 +56,17 @@
                     </div>
                 </div>
                 
-                <a href="#" class="block w-full text-center px-6 py-3 rounded-lg border-2 border-[#C40F12] text-[#C40F12] font-semibold hover:bg-[#C40F12] hover:text-white transition group-hover:shadow-md">
+                <a  wire:click="openModal( 'Tier 2', 300000)"  href="#" class="block w-full text-center px-6 py-3 rounded-lg border-2 border-[#C40F12] text-[#C40F12] font-semibold hover:bg-[#C40F12] hover:text-white transition group-hover:shadow-md">
                     Select Plan
+                    
                 </a>
             </div>
+
+
+
+
+
+
             
             <div class="bg-gray-50 px-8 py-6">
                 <p class="text-sm font-medium text-gray-700 mb-4">Plan includes:</p>
@@ -477,154 +361,101 @@
     </div>
 </div>
 
-<!-- Plan Comparison Table -->
-<div class="max-w-6xl mx-auto px-4 mb-20">
-    <h2 class="text-3xl font-bold text-center mb-12">Compare All Plans</h2>
-    <div class="overflow-x-auto">
-        <table class="table-auto w-full border-collapse border border-gray-200 text-sm text-left">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="px-4 py-3 border border-gray-200">Feature</th>
-                    <th class="px-4 py-3 border border-gray-200 text-center">Tier 1</th>
-                    <th class="px-4 py-3 border border-gray-200 text-center">Tier 2</th>
-                    <th class="px-4 py-3 border border-gray-200 text-center">Tier 3</th>
-                    <th class="px-4 py-3 border border-gray-200 text-center">Tier 4</th>
-                    <th class="px-4 py-3 border border-gray-200 text-center">Tier 5</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="px-4 py-3 border border-gray-200">Statement Templates</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Basic</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Custom</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Branded</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Premium Branded</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Enterprise Branded</td>
-                </tr>
-                <tr>
-                    <td class="px-4 py-3 border border-gray-200">Delivery Options</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Email</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Email & SMS</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Email, SMS & Portal</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">All Digital Channels</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">All Digital & Print</td>
-                </tr>
-                <tr>
-                    <td class="px-4 py-3 border border-gray-200">Support</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Email</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Priority Email & Chat</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">24/7 Dedicated</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Account Manager</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Executive Support</td>
-                </tr>
-                <tr>
-                    <td class="px-4 py-3 border border-gray-200">Analytics</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Basic</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Standard</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Advanced</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Premium</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Executive</td>
-                </tr>
-                <tr>
-                    <td class="px-4 py-3 border border-gray-200">API Integration</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">No</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Limited</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Yes</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Full</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Enterprise</td>
-                </tr>
-                <tr>
-                    <td class="px-4 py-3 border border-gray-200">Fraud Detection</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">No</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Basic</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Standard</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Advanced</td>
-                    <td class="px-4 py-3 border border-gray-200 text-center">Premium</td>
-                </tr>
-            </tbody>
-        </table>
+
+
+
+
+
+
+
+<div>
+@if($showModal)
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-3xl p-8 rounded-2xl shadow-xl relative">
+            
+            <!-- Loading Spinner Overlay -->
+            <div wire:loading.delay.long class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+                <svg class="animate-spin h-10 w-10 text-[#C40F12]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="#C40F12" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="#C40F12" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+            </div>
+
+            <!-- Header -->
+            <div class="flex items-center mb-6">
+                <img src="{{ asset('/image/selcom.png') }}" alt="Selcom" class="h-6 w-auto mr-2">
+                <h2 class="text-2xl font-bold">Complete Payment via Selcom</h2>
+            </div>
+
+            <!-- Form Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Column -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Selected Plan</label>
+                        <div class="text-base font-semibold text-gray-800">{{ $planName }}</div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Number of Statements</label>
+                        <input type="number" wire:model.live="statementCount" min="1"
+                            class="w-full rounded-md border-gray-300 focus:ring-[#C40F12] focus:border-[#C40F12]">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Total Amount (TZS)</label>
+                        <input type="text" wire:model="amount" readonly
+                            class="w-full rounded-md bg-gray-100 border-gray-200 text-gray-800 font-medium">
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Select Mobile Network</label>
+                        <select wire:model="network"
+                            class="w-full rounded-md border-gray-300 focus:ring-[#C40F12] focus:border-[#C40F12]">
+                            <option value="">-- Choose --</option>
+                            <option value="vodacom">Vodacom</option>
+                            <option value="tigo">Tigo</option>
+                            <option value="airtel">Airtel</option>
+                            <option value="halotel">Halotel</option>
+                        </select>
+                        @error('network') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input type="text" wire:model="phone" placeholder="07XXXXXXXX"
+                            class="w-full rounded-md border-gray-300 focus:ring-[#C40F12] focus:border-[#C40F12]">
+                        @error('phone') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex items-start">
+                        <input type="checkbox" wire:model="acceptTerms" class="mt-1 mr-2 rounded text-[#C40F12]">
+                        <label class="text-sm text-gray-600 leading-5">
+                            I accept the <a href="#" class="text-[#C40F12] underline">terms & conditions</a>.
+                        </label>
+                    </div>
+                    @error('acceptTerms') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-between items-center mt-8">
+                <button wire:click="$set('showModal', false)" class="text-sm text-gray-500 hover:text-gray-800">Cancel</button>
+                <button wire:click="submitPayment"
+                    class="px-6 py-2 bg-[#C40F12] text-white font-semibold rounded-md hover:bg-[#A00D10]">
+                    Confirm & Pay
+                </button>
+            </div>
+        </div>
     </div>
+@endif
 </div>
 
 
 
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-12">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Company Info -->
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-4">InfoSec</h3>
-                    <p class="text-sm">
-                        Premium cybersecurity solutions tailored to protect your business and personal data.
-                    </p>
-                    <div class="mt-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="ml-4 text-gray-400 hover:text-white transition">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="ml-4 text-gray-400 hover:text-white transition">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                    </div>
-                </div>
 
-                <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-4">Quick Links</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Services</a></li>
-                        <li><a href="#" class="hover:text-white transition">Solutions</a></li>
-                        <li><a href="#" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                        <li><a href="#" class="hover:text-white transition">Resources</a></li>
-                    </ul>
-                </div>
-
-                <!-- Support -->
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-4">Support</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Help Center</a></li>
-                        <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                    </ul>
-                </div>
-
-                <!-- Newsletter -->
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-4">Newsletter</h3>
-                    <p class="text-sm mb-4">
-                        Subscribe to our newsletter to stay updated on the latest cybersecurity trends.
-                    </p>
-                    <form action="#" method="POST" class="flex items-center">
-                        <input type="email" name="email" placeholder="Your email" class="w-full px-4 py-2 rounded-l-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#C40F12]">
-                        <button type="submit" class="px-4 py-2 bg-[#C40F12] text-white rounded-r-md hover:bg-[#A00D10] transition">
-                            Subscribe
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="mt-12 border-t border-gray-700 pt-6 text-center text-sm">
-                <p>&copy; {{ date('Y') }} InfoSec. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Livewire Scripts -->
-    @livewireScripts
-
-    <!-- Mobile Menu Toggle Script -->
-    <script>
-        document.getElementById('mobileMenuButton').addEventListener('click', function () {
-            const mobileMenu = document.getElementById('mobileMenu');
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
-    </body>
-</html>
+</div>

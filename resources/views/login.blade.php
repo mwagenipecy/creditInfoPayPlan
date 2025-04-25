@@ -137,6 +137,16 @@
       opacity: 1;
     }
   </style>
+
+
+   <!-- Scripts -->
+   @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+<!-- Styles -->
+@livewireStyles
+
+
+
 </head>
 <body class="bg-gray-50">
 
@@ -397,6 +407,10 @@
     </div>
   </div>
 </div>
+
+@livewireScripts
+
+
 
 <script>
   // Page loader

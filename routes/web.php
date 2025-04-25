@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Site\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
 
 Route::middleware([
     'auth:sanctum',
@@ -12,8 +16,32 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('pages.dashboard.dashboard');
     })->name('dashboard');
+
+
+
+    Route::group(['prefix' => 'document'], function () {
+        Route::get('list',[DocumentController::class,'index'])->name('document.list');
+
+        //register company 
+        Route::get('company',[DocumentController::class,'addCompany'])->name('add.company');
+
+        // add document
+        Route::get('/add/{id}',[DocumentController::class,'addDocument'])->name('add.document');
+    });
+
+
+
+
+    Route::group(['prefix' => 'payment'], function () {
+
+      Route::get('plans',[PaymentController::class,'index'])->name('payment.plan');
+
+    });
+    
+
+
 });
 
 
@@ -36,6 +64,13 @@ Route::get('test2',function(){
 
 
 Route::get('test3',function(){
-
     return view('layout');
 });
+
+
+
+///  welcome page 
+Route::get('',[WelcomeController::class,'index'])->name('home');
+
+// pricing page 
+Route::get('/price',[WelcomeController::class,'showPricing'])->name('price.list');

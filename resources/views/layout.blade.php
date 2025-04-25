@@ -101,6 +101,17 @@
       });
     });
   </script>
+
+
+
+ <!-- Scripts -->
+ @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+<!-- Styles -->
+@livewireStyles
+
+
+
 </head>
 <body class="bg-gray-50 text-gray-800">
 
@@ -115,13 +126,9 @@
     <div class="h-full flex flex-col">
       <!-- Logo -->
       <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-center space-x-2">
-        <div class="bg-red-50 p-2 rounded-lg">
-          <svg class="h-8 w-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path>
-          </svg>
+       
+        <img src="{{ asset('/creditInfoLogo.svg') }}" alt="InfoSec Company Logo" class="h-8" />
         </div>
-        <span class="text-2xl font-bold text-gray-800">Credit<span class="text-[#C40F12]">Info</span></span>
-      </div>
 
       <!-- User Profile -->
       <div class="px-6 py-4 border-b border-gray-100">
@@ -355,6 +362,11 @@
     </main>
   </div>
 </div>
+
+
+@livewireScripts
+
+
 
 </body>
 </html>
