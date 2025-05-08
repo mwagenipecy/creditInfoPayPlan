@@ -49,6 +49,14 @@
     <span class="ml-3 link-text">Payments</span>
   </a>
 
+  <a href="{{ route('credit.report') }}" data-page="credit-report" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
+    <i class="fas fa-file-alt nav-icon"></i>
+  </span>
+  <span class="ml-3 link-text">Credit Report</span>
+</a>
+
+
   <a href="{{ route('user.list') }}" data-page="users" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-users nav-icon"></i>

@@ -1,0 +1,138 @@
+{
+	"info": {
+		"_postman_id": "5d57d158-b359-4422-baf9-0f85053b3fbe",
+		"name": "CRB PDF REPORT API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17719279"
+	},
+
+    
+	"item": [
+		{
+			"name": "STEP 01 (Get Creditinfo ID)",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "nbcEmkopo213",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "nbcemkopo",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/xml;charset=UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "SOAPAction",
+						"value": "http://creditinfo.com/CB5/IReportPublicServiceBase/SearchIndividual",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:cb5=\"http://creditinfo.com/CB5\" xmlns:sear=\"http://creditinfo.com/CB5/v5.73/Search\">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <cb5:SearchIndividual>\r\n         <!--Optional:-->\r\n         <cb5:query>\r\n            <!--Optional:-->\r\n            <sear:Parameters>\r\n               <!--Optional:-->\r\n               <sear:FullName>ELICK S JUMA</sear:FullName>\r\n               <!--Optional:-->\r\n               <sear:IdNumber>19910425-47316-00003-25</sear:IdNumber>\r\n               <!--Optional:-->\r\n               <sear:IdNumberType>NationalID</sear:IdNumberType>\r\n               <!--Optional:-->\r\n               <sear:PhoneNumber>?</sear:PhoneNumber>\r\n            </sear:Parameters>\r\n         </cb5:query>\r\n      </cb5:SearchIndividual>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>",
+					"options": {
+						"raw": {
+							"language": "xml"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ws-stage.creditinfo.co.tz/WsReport/v5.73/service.svc",
+					"protocol": "https",
+					"host": [
+						"ws-stage",
+						"creditinfo",
+						"co",
+						"tz"
+					],
+					"path": [
+						"WsReport",
+						"v5.73",
+						"service.svc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "STEP 02 (GET PDF REPORT)",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "nbcEmkopo213",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "nbcemkopo",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/xml;charset=UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "SOAPAction",
+						"value": "http://creditinfo.com/CB5/IReportPublicServiceBase/GetPdfReport",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:cb5=\"http://creditinfo.com/CB5\" xmlns:cus=\"http://creditinfo.com/CB5/v5.73/CustomReport\">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <cb5:GetPdfReport>\r\n         <!--Optional:-->\r\n         <cb5:parameters>\r\n            <!--Optional:-->\r\n            <cus:Consent>true</cus:Consent>\r\n            <!--Optional:-->\r\n            <cus:IDNumber>10000089</cus:IDNumber>\r\n            <!--Optional:-->\r\n            <cus:IDNumberType>CreditinfoId</cus:IDNumberType>\r\n            <!--Optional:-->\r\n            <cus:InquiryReason>ApplicationForCreditOrAmendmentOfCreditTerms</cus:InquiryReason>\r\n            <!--Optional:-->\r\n            <cus:InquiryReasonText>Testing Purposes</cus:InquiryReasonText>\r\n            <!--Optional:-->\r\n            <cus:LanguageCode>en-GB</cus:LanguageCode>\r\n            <!--Optional:-->\r\n            <cus:ReportName>CreditinfoReport</cus:ReportName>\r\n            <!--Optional:-->\r\n            <cus:SubjectType>Individual</cus:SubjectType>\r\n         </cb5:parameters>\r\n      </cb5:GetPdfReport>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>",
+					"options": {
+						"raw": {
+							"language": "xml"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ws-stage.creditinfo.co.tz/WsReport/v5.73/service.svc",
+					"protocol": "https",
+					"host": [
+						"ws-stage",
+						"creditinfo",
+						"co",
+						"tz"
+					],
+					"path": [
+						"WsReport",
+						"v5.73",
+						"service.svc"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

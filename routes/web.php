@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CreditReportController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Site\WelcomeController;
@@ -60,6 +61,14 @@ Route::middleware([
         Route::get('dashboard',[UsageController::class,'index'])->name('usage.dashboard');
         
        });
+
+
+       /// credit report section  credit.report
+       Route::group(['prefix' => 'credit'], function () {
+        Route::get('report',[CreditReportController::class,'index'])->name('credit.report');
+        
+       });
+
     
 
 
