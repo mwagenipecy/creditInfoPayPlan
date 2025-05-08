@@ -92,6 +92,8 @@
         <form action="{{ route('register') }}" method="POST" class="space-y-5">
           @csrf
           
+          <x-validation-errors class="mb-4" />
+
           <!-- Name Fields -->
           <div class="grid grid-cols-2 gap-4">
             <!-- First Name Field -->
@@ -100,7 +102,7 @@
               <div class="relative">
                 <input
                   type="text"
-                  name="name"
+                  name="first_name"
                   id="first_name"
                   required
                   placeholder="John"

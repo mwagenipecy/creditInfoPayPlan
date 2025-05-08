@@ -322,7 +322,8 @@
       </div>
 
       <div class="bg-white rounded-xl p-8 card-shadow">
-        <form action="#" method="POST" class="space-y-5">
+        <form action="{{ route('login') }}" method="POST" class="space-y-5">
+          @csrf
           <!-- Email Field -->
           <div class="gradient-border">
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>

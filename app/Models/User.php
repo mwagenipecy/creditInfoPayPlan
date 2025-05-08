@@ -26,9 +26,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'first_name',
+        'last_name',
         'name',
         'email',
         'password',
+        'role_id'
     ];
 
     /**
@@ -64,4 +67,51 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+
+    public function accessRequests()
+    {
+        return $this->hasMany(AccessRequest::class, 'requester_id');
+    }
+
+    /**
+     * Get the access requests approved by this user.
+     */
+    public function approvedRequests()
+    {
+        return $this->hasMany(AccessRequest::class, 'approved_by');
+    }
+
+
+    public function isAdmin()
+{
+    return $this->role_id === 'admin';
+}
+
+
+public function isCompany()
+{
+    return $this->role_id === 'company';
+}
+
+
+public function hasRole(){
+
+    return $this->belongsTo(Role::class);
+}
+
+
+public function role(){
+
+    return $this->belongsTo(Role::class);
+}
+
+
+public function company(){
+
+    return $this->belongsTo(Company::class);
+}
+
+
 }

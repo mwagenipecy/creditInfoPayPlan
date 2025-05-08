@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 
-                <a  wire:click="openModal( 'Tier 2', 300000)"  href="#" class="block w-full text-center px-6 py-3 rounded-lg border-2 border-[#C40F12] text-[#C40F12] font-semibold hover:bg-[#C40F12] hover:text-white transition group-hover:shadow-md">
+                <a  wire:click="openModal( 'Tier 1', 125000)"  href="#" class="block w-full text-center px-6 py-3 rounded-lg border-2 border-[#C40F12] text-[#C40F12] font-semibold hover:bg-[#C40F12] hover:text-white transition group-hover:shadow-md">
                     Select Plan
                     
                 </a>
@@ -121,7 +121,7 @@
                     </div>
                 </div>
                 
-                <a href="#" class="block w-full text-center px-6 py-3 rounded-lg border-2 bg-[#C40F12] text-white font-semibold hover:bg-[#A00D10] border-[#C40F12] transition shadow-sm group-hover:shadow-md">
+                <a href="#" wire:click="openModal( 'Tier 2', 300000)"  class="block w-full text-center px-6 py-3 rounded-lg border-2 bg-[#C40F12] text-white font-semibold hover:bg-[#A00D10] border-[#C40F12] transition shadow-sm group-hover:shadow-md">
                     Select Plan
                 </a>
             </div>
@@ -178,7 +178,7 @@
                     </div>
                 </div>
                 
-                <a href="#" class="block w-full text-center px-6 py-3 rounded-lg border-2 border-gray-800 text-gray-800 font-semibold hover:bg-gray-800 hover:text-white transition group-hover:shadow-md">
+                <a href="#" wire:click="openModal( 'Tier 3', 1000000)" class="block w-full text-center px-6 py-3 rounded-lg border-2 border-gray-800 text-gray-800 font-semibold hover:bg-gray-800 hover:text-white transition group-hover:shadow-md">
                     Select Plan
                 </a>
             </div>
@@ -367,94 +367,125 @@
 
 
 
-
-<div>
 @if($showModal)
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4">
-        <div class="bg-white w-full max-w-3xl p-8 rounded-2xl shadow-xl relative">
-            
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-3xl rounded-xl shadow-2xl relative overflow-hidden">
             <!-- Loading Spinner Overlay -->
-            <div wire:loading.delay.long class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
-                <svg class="animate-spin h-10 w-10 text-[#C40F12]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="#C40F12" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="#C40F12" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
+            <div wire:loading.delay.long class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
+                <div class="relative h-12 w-12">
+                    <div class="absolute animate-ping h-full w-full rounded-full bg-red-400 opacity-75"></div>
+                    <div class="relative flex items-center justify-center h-full w-full rounded-full bg-red-500">
+                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </div>
+                </div>
             </div>
 
             <!-- Header -->
-            <div class="flex items-center mb-6">
-                <img src="{{ asset('/image/selcom.png') }}" alt="Selcom" class="h-6 w-auto mr-2">
-                <h2 class="text-2xl font-bold">Complete Payment via Selcom</h2>
+            <div class="bg-gray-50 p-6 border-b border-gray-100">
+                <div class="flex items-center">
+                    <img src="{{ asset('/image/selcom.png') }}" alt="Selcom" class="h-8 w-auto mr-3">
+                    <h2 class="text-2xl font-bold text-gray-800">Complete Payment</h2>
+                </div>
+                <p class="text-gray-500 mt-1">Secure payment processing via Selcom</p>
             </div>
 
-            <!-- Form Layout -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Left Column -->
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Selected Plan</label>
-                        <div class="text-base font-semibold text-gray-800">{{ $planName }}</div>
+            <!-- Content -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div class="space-y-5">
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                            <span class="text-xs font-medium uppercase tracking-wider text-gray-500">Selected Plan</span>
+                            <div class="text-lg font-semibold text-gray-800 mt-1">{{ $planName }}</div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Number of Statements</label>
+                            <div class="relative">
+                                <input type="number" wire:model.live="statementCount" min="1"
+                                    class="w-full pl-4 pr-12 py-3 rounded-lg border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <span class="text-gray-400">qty</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                            <div class="relative">
+                                <input type="text" wire:model="amount" readonly
+                                    class="w-full pl-12 py-3 rounded-lg bg-gray-50 border-gray-200 text-gray-800 font-medium shadow-sm">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <span class="text-gray-500 font-medium">TZS</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Number of Statements</label>
-                        <input type="number" wire:model.live="statementCount" min="1"
-                            class="w-full rounded-md border-gray-300 focus:ring-[#C40F12] focus:border-[#C40F12]">
-                    </div>
+                    <!-- Right Column -->
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Network</label>
+                            <div class="relative">
+                                <select wire:model="network"
+                                    class="w-full pl-4 pr-10 py-3 rounded-lg appearance-none border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                    <option value="">-- Choose network --</option>
+                                    <option value="vodacom">Vodacom</option>
+                                    <option value="tigo">Tigo</option>
+                                    <option value="airtel">Airtel</option>
+                                    <option value="halotel">Halotel</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            @error('network') <span class="text-red-600 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Total Amount (TZS)</label>
-                        <input type="text" wire:model="amount" readonly
-                            class="w-full rounded-md bg-gray-100 border-gray-200 text-gray-800 font-medium">
-                    </div>
-                </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input type="text" wire:model="phone" placeholder="07XXXXXXXX"
+                                class="w-full pl-4 py-3 rounded-lg border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm">
+                            @error('phone') <span class="text-red-600 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
 
-                <!-- Right Column -->
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Select Mobile Network</label>
-                        <select wire:model="network"
-                            class="w-full rounded-md border-gray-300 focus:ring-[#C40F12] focus:border-[#C40F12]">
-                            <option value="">-- Choose --</option>
-                            <option value="vodacom">Vodacom</option>
-                            <option value="tigo">Tigo</option>
-                            <option value="airtel">Airtel</option>
-                            <option value="halotel">Halotel</option>
-                        </select>
-                        @error('network') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                        <div class="pt-2">
+                            <label class="flex items-start cursor-pointer">
+                                <input type="checkbox" wire:model="acceptTerms" class="mt-1 rounded text-red-500 border-gray-300 focus:ring-red-500">
+                                <span class="ml-2 text-sm text-gray-600 leading-5">
+                                    I accept the <a href="#" class="text-red-500 font-medium hover:underline">terms & conditions</a>.
+                                </span>
+                            </label>
+                            @error('acceptTerms') <span class="text-red-600 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input type="text" wire:model="phone" placeholder="07XXXXXXXX"
-                            class="w-full rounded-md border-gray-300 focus:ring-[#C40F12] focus:border-[#C40F12]">
-                        @error('phone') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="flex items-start">
-                        <input type="checkbox" wire:model="acceptTerms" class="mt-1 mr-2 rounded text-[#C40F12]">
-                        <label class="text-sm text-gray-600 leading-5">
-                            I accept the <a href="#" class="text-[#C40F12] underline">terms & conditions</a>.
-                        </label>
-                    </div>
-                    @error('acceptTerms') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-between items-center mt-8">
-                <button wire:click="$set('showModal', false)" class="text-sm text-gray-500 hover:text-gray-800">Cancel</button>
+            <!-- Footer -->
+            <div class="bg-gray-50 p-6 border-t border-gray-100 flex flex-col sm:flex-row-reverse sm:justify-between sm:items-center gap-4">
                 <button wire:click="submitPayment"
-                    class="px-6 py-2 bg-[#C40F12] text-white font-semibold rounded-md hover:bg-[#A00D10]">
-                    Confirm & Pay
+                    class="w-full sm:w-auto px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition shadow-sm flex justify-center items-center">
+                    <span>Confirm & Pay</span>
+                    <svg class="ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </button>
+                <button wire:click="$set('showModal', false)" 
+                    class="w-full sm:w-auto px-6 py-3 bg-white text-gray-600 font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition flex justify-center items-center">
+                    <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Cancel</span>
                 </button>
             </div>
         </div>
     </div>
 @endif
-</div>
-
-
 
 
 

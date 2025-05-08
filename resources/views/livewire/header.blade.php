@@ -39,18 +39,58 @@
           <div class="h-8 border-l border-gray-200"></div>
           
           <!-- User dropdown -->
-          <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-            <img src="https://ui-avatars.com/api/?name=A+User&background=C40F12&color=fff&bold=true"
-                 class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" />
-            <div class="hidden md:block">
-              <div class="text-sm font-medium text-gray-700">Admin User</div>
-              <div class="text-xs text-gray-500">admin@creditinfo.com</div>
+          <div class="relative">
+            <div onclick="toggleUserMenu()" class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+              <img src="https://ui-avatars.com/api/?name=A+User&background=C40F12&color=fff&bold=true"
+                   class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" />
+              <div class="hidden md:block">
+                <div class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</div>
+                <div class="text-xs text-gray-500">{{ auth()->user()->email }}</div>
+              </div>
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
             </div>
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
+            
+            <!-- Dropdown Menu -->
+            <div id="userDropdownMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden z-50">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#C40F12]">
+                <i class="fas fa-user mr-2"></i> Profile
+              </a>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#C40F12]">
+                <i class="fas fa-cog mr-2"></i> Settings
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              <!-- Laravel Logout Form -->
+              <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                @csrf
+              </form>
+              <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                 class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 font-medium">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </header>
+
+    <!-- Add the JavaScript for the dropdown functionality -->
+    <script>
+      function toggleUserMenu() {
+        const menu = document.getElementById('userDropdownMenu');
+        menu.classList.toggle('hidden');
+      }
+      
+      // Close the dropdown when clicking outside
+      window.addEventListener('click', function(event) {
+        const menu = document.getElementById('userDropdownMenu');
+        const userDropdown = event.target.closest('.relative');
+        
+        if (!userDropdown && !menu.classList.contains('hidden')) {
+          menu.classList.add('hidden');
+        }
+      });
+    </script>
 </div>
+

@@ -31,6 +31,10 @@ class Company extends Model
         'terms_accepted',
     ];
 
+
+    protected $guarded=[];
+
+
     /**
      * Get the documents for the company.
      */

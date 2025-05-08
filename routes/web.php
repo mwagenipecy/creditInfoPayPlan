@@ -3,6 +3,7 @@
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Site\WelcomeController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -37,6 +38,17 @@ Route::middleware([
     Route::group(['prefix' => 'payment'], function () {
 
       Route::get('plans',[PaymentController::class,'index'])->name('payment.plan');
+
+    });
+
+
+
+
+
+    // usermanagement 
+
+    Route::group(['prefix' => 'user'], function () {
+     Route::get('list',[UserController::class,'index'])->name('user.list');
 
     });
     

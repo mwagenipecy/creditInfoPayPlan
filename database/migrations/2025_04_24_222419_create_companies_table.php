@@ -39,6 +39,11 @@ return new class extends Migration
             // Verification status and terms acceptance
             $table->string('verification_status')->default('draft');
             $table->boolean('terms_accepted')->default(false);
+
+
+            $table->text('address')->nullable();
+            $table->string('logo_path')->nullable();
+            $table->boolean('is_blocked')->default(false);
             
             $table->timestamps();
         });
