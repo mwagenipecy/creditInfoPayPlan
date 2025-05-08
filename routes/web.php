@@ -3,6 +3,7 @@
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Site\WelcomeController;
+use App\Http\Controllers\UsageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,14 @@ Route::middleware([
      Route::get('list',[UserController::class,'index'])->name('user.list');
 
     });
+
+
+
+    // usage management 
+    Route::group(['prefix' => 'usage'], function () {
+        Route::get('dashboard',[UsageController::class,'index'])->name('usage.dashboard');
+        
+       });
     
 
 

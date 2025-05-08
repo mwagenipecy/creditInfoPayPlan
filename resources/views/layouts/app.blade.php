@@ -68,32 +68,63 @@
   </style>
 
   
-  <script defer>
+<script defer>
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('-translate-x-full');
       document.getElementById('overlay').classList.toggle('hidden');
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-      // Set dashboard as active by default
-      document.querySelector('.sidebar-link[data-page="dashboard"]').classList.add('active');
+      // Get all sidebar links
+      const sidebarLinks = document.querySelectorAll('.sidebar-link');
       
-      // Add click event listeners to sidebar links
-      document.querySelectorAll('.sidebar-link').forEach(link => {
+      // Function to set active styles
+      function setActiveStyles(link) {
+        // Remove active classes from all links first
+        sidebarLinks.forEach(el => {
+          el.classList.remove('active');
+          
+          // Remove Tailwind classes for active state
+          el.classList.remove('bg-red-50', 'text-[#C40F12]');
+          
+          // Reset icon color
+          const icon = el.querySelector('span:first-of-type');
+          if (icon) {
+            icon.classList.remove('text-[#C40F12]');
+            icon.classList.add('text-gray-500');
+          }
+        });
+        
+        // Add active class to selected link
+        link.classList.add('active');
+        
+        // Add Tailwind classes for active state
+        link.classList.add('bg-red-50', 'text-[#C40F12]');
+        
+        // Update icon color
+        const icon = link.querySelector('span:first-of-type');
+        if (icon) {
+          icon.classList.remove('text-gray-500');
+          icon.classList.add('text-[#C40F12]');
+        }
+        
+        // Save in localStorage
+        localStorage.setItem('activeMenu', link.getAttribute('data-page'));
+        
+        // Update header title (if you have this element)
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+          pageTitle.innerText = link.querySelector('.link-text').innerText;
+        }
+      }
+      
+      // Add click event listeners to all sidebar links
+      sidebarLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-          // Prevent default only in demo
-        //   e.preventDefault();
+          // Don't prevent default as we want to navigate to the link
           
-          // Remove active class from all links
-          document.querySelectorAll('.sidebar-link').forEach(el => {
-            el.classList.remove('active');
-          });
-          
-          // Add active class to clicked link
-          this.classList.add('active');
-          
-          // Update header title
-          document.getElementById('page-title').innerText = this.querySelector('.link-text').innerText;
+          // Set this link as active
+          setActiveStyles(this);
           
           // Close sidebar on mobile after navigation
           if (window.innerWidth < 768) {
@@ -101,10 +132,42 @@
           }
         });
       });
+      
+      // Check if we should restore from localStorage or use route-based active state
+      const storedActiveMenu = localStorage.getItem('activeMenu');
+      
+      if (storedActiveMenu) {
+        // If there's a stored active menu, use it
+        const storedActiveLink = document.querySelector(`.sidebar-link[data-page="${storedActiveMenu}"]`);
+        if (storedActiveLink) {
+          setActiveStyles(storedActiveLink);
+        } else {
+          // Use current route as fallback
+          const currentActiveLink = document.querySelector('.sidebar-link.bg-red-50');
+          if (currentActiveLink) {
+            setActiveStyles(currentActiveLink);
+            // Update localStorage with current active route
+            localStorage.setItem('activeMenu', currentActiveLink.getAttribute('data-page'));
+          }
+        }
+      } else {
+        // No stored menu, use route-based active link
+        const currentActiveLink = document.querySelector('.sidebar-link.bg-red-50');
+        if (currentActiveLink) {
+          setActiveStyles(currentActiveLink);
+          // Set in localStorage
+          localStorage.setItem('activeMenu', currentActiveLink.getAttribute('data-page'));
+        } else {
+          // Default to dashboard if nothing else is active
+          const dashboardLink = document.querySelector('.sidebar-link[data-page="dashboard"]');
+          if (dashboardLink) {
+            setActiveStyles(dashboardLink);
+          }
+        }
+      }
     });
   </script>
-
-
+  
 
  <!-- Scripts -->
  @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -125,6 +188,11 @@
 
   <!-- Sidebar -->
  <livewire:side-bar />
+
+
+
+
+ 
 
   <!-- Main content -->
   <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
@@ -149,6 +217,13 @@
 @livewireScripts
 
 
+<script>
 
+document.addEventListener('notify', event => {
+    // Show notification with event.detail.type and event.detail.message
+    showNotification(event.detail.type, event.detail.message);
+});
+
+</script>
 </body>
 </html>

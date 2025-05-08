@@ -3,381 +3,185 @@
 namespace App\Livewire\UserManagement;
 
 use Livewire\Component;
-use Livewire\WithPagination;
 use App\Models\User;
-use App\Models\AccessRequest;
-use App\Models\ExternalUser;
-use App\Models\UserGroup;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use App\Models\Company;
+use App\Models\Role;
+use App\Models\ActivityLog;
 
-use Illuminate\Support\Facades\DB;
 class Dashboard extends Component
 {
-    use WithPagination;
-
-    public $activeTab = 'internal';
-    public $searchTerm = '';
-    public $sortField = 'created_at';
-    public $sortDirection = 'desc';
-    public $showCreateModal = false;
-    public $showRequestModal = false;
-    public $requestType = 'individual';
-
-    public $internalUsers=[];
+    // Tab and state management
+    public $activeTab = 'all_users';
+    public $perPage = 10;
 
     public $showDeleteModal=false;
-    public $availableUsers;
-    
-    // User form properties
-    public $userId;
-    public $name;
-    public $email;
-    public $role = 'user';
-    public $password;
-    public $selectedUsers = [];
-    public $selectedGroups = [];
-    public $userGroups = [];
-    public $requestReason = '';
-    public $accessLevel = 'read';
-    public $expiryDate = null;
-
-public $targetUserId;
-public $groupName;
-public $userCount;
-public $justification;
-
-    
-    protected $rules = [
-        'name' => 'required|min:3',
-        'email' => 'required|email|unique:users',
-        'role' => 'required',
-        'password' => 'required|min:8',
+    public $searchTerm = '';
+    public $filters = [
+        'company' => '',
+        'role' => '',
+        'status' => '',
+        'verified' => '',
+        'date_range' => '',
     ];
-
-
-
-    /**
- * Request access for a specific external user
- *
- * @param int $userId The ID of the external user
- * @return void
- */
-public function requestAccessForUser($userId)
-{
-    // Find the external user by ID
-    $externalUser = ExternalUser::findOrFail($userId);
     
-    // Initialize variables for the modal
-    $this->targetUserId = $userId;
-    $this->requestType = 'individual';
-    $this->accessLevel = 'read'; // Default to read access
-    $this->justification = '';
-    $this->expiryDate = now()->addMonths(3)->format('Y-m-d'); // Default expiry of 3 months
+    // Selection for bulk actions
+    public $selectedUsers = [];
     
-    // Reset any validation errors
-    $this->resetErrorBag();
+    // Stats
+    public $totalUsers = 0;
+    public $activeUsers = 0;
+    public $activeAdmins = 0;
+    public $companyAdmins = 0;
+    public $pendingVerifications = 0;
+    public $recentVerifications = 0;
+    public $blockedUsers = 0;
+    public $blockedCompanies = 0;
     
-    // Open the request modal
-    $this->showRequestModal = true;
-}
-
-/**
- * Create an access request based on form data
- *
- * @return void
- */
-public function createAccessRequest()
-{
-    // Validate the request data
-    $this->validate([
-        'requestType' => 'required|in:individual,group',
-        'accessLevel' => 'required|in:read,write,admin',
-        'justification' => 'required|string|min:10',
-        'expiryDate' => 'required|date|after:today',
-    ]);
+    // Listen for events from child components
+    protected $listeners = [
+        'userCreated' => 'refreshData',
+        'userUpdated' => 'refreshData',
+        'userDeleted' => 'refreshData',
+        'userBlocked' => 'refreshData',
+        'userUnblocked' => 'refreshData',
+        'userVerified' => 'refreshData',
+        'bulkActionCompleted' => 'refreshData',
+    ];
     
-    // Additional validation based on request type
-    if ($this->requestType === 'individual') {
-        $this->validate([
-            'targetUserId' => 'required|exists:external_users,id',
-        ]);
-    } else {
-        $this->validate([
-            'groupName' => 'required|string|min:3',
-            'userCount' => 'required|integer|min:2|max:50',
-        ]);
-    }
-    
-    try {
-        // Start a database transaction
-        DB::beginTransaction();
-        
-        if ($this->requestType === 'individual') {
-            // Create an access request for an individual user
-            AccessRequest::create([
-                'requester_id' => auth()->id(),
-                'external_user_id' => $this->targetUserId,
-                'user_group_id' => null,
-                'reason' => $this->justification,
-                'access_level' => $this->accessLevel,
-                'expiry_date' => $this->expiryDate,
-                'status' => 'pending',
-            ]);
-        } else {
-            // Create a new user group
-            $userGroup = UserGroup::create([
-                'name' => $this->groupName,
-                'description' => "Group created by " . auth()->user()->name . " on " . now()->format('Y-m-d'),
-            ]);
-            
-            // Create an access request for the group
-            AccessRequest::create([
-                'requester_id' => auth()->id(),
-                'external_user_id' => null, 
-                'user_group_id' => $userGroup->id,
-                'reason' => $this->justification,
-                'access_level' => $this->accessLevel,
-                'expiry_date' => $this->expiryDate,
-                'status' => 'pending',
-            ]);
-        }
-        
-        // Commit the transaction
-        DB::commit();
-        
-        // Close the modal and show a success message
-        $this->showRequestModal = false;
-        $this->dispatchBrowserEvent('notify', [
-            'type' => 'success',
-            'message' => 'Access request submitted successfully!'
-        ]);
-        
-    } catch (\Exception $e) {
-        // Rollback the transaction if something went wrong
-        DB::rollBack();
-        
-        // Show an error message
-        $this->dispatchBrowserEvent('notify', [
-            'type' => 'error',
-            'message' => 'Failed to submit access request: ' . $e->getMessage()
-        ]);
-    }
-    
-    // Reset form fields
-    $this->resetExcept(['activeTab', 'searchTerm', 'pendingRequests']);
-}
-
-
-
     public function mount()
     {
-        $this->userGroups = UserGroup::all();
-        $this->internalUsers=User::get();
+        // Initialize with default tab
+        $this->activeTab = 'all_users';
+        
+        // If user is company admin, set company filter
+        if (auth()->user()->hasRole('company_admin')) {
+            $this->filters['company'] = auth()->user()->company_id;
+        }
+        
+        // Load initial data
+        $this->refreshData();
     }
-
+    
+    public function refreshData()
+    {
+        // Calculate dashboard stats
+        $this->calculateStats();
+    }
+    
     public function updatedActiveTab()
     {
-        $this->resetPage();
+        // Reset selection when changing tabs
+        $this->selectedUsers = [];
     }
-
-    public function sortBy($field)
+    
+    public function resetFilters()
     {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortField = $field;
-            $this->sortDirection = 'asc';
-        }
-    }
-
-    public function createUser()
-    {
-        $this->validate();
-        
-        User::create([
-            'name' => $this->name,
-            'email' => $this->email,
-            'role' => $this->role,
-            'password' => Hash::make($this->password),
-        ]);
-        
-        $this->reset(['name', 'email', 'role', 'password', 'showCreateModal']);
-      //  $this->dispatchBrowserEvent('user-created', ['message' => 'User created successfully!']);
-    }
-
-    public function editUser($id)
-    {
-        $user = User::findOrFail($id);
-        $this->userId = $user->id;
-        $this->name = $user->name;
-        $this->email = $user->email;
-        $this->role = $user->role;
-        $this->password = '';
-        
-        $this->showCreateModal = true;
-    }
-
-    public function updateUser()
-    {
-        $user = User::findOrFail($this->userId);
-        
-        $this->validate([
-            'name' => 'required|min:3',
-            'email' => 'required|email|unique:users,email,'.$this->userId,
-            'role' => 'required',
-            'password' => 'nullable|min:8',
-        ]);
-        
-        $userData = [
-            'name' => $this->name,
-            'email' => $this->email,
-            'role' => $this->role,
+        $this->filters = [
+            'company' => auth()->user()->hasRole('company_admin') ? auth()->user()->company_id : '',
+            'role' => '',
+            'status' => '',
+            'verified' => '',
+            'date_range' => '',
         ];
+        $this->searchTerm = '';
         
-        if (!empty($this->password)) {
-            $userData['password'] = Hash::make($this->password);
+        // Emit event to child components
+        $this->dispatch('filtersReset');
+    }
+    
+
+
+    public function setTab($activeTab, $tabName){
+
+        $this->activeTab=$tabName;
+    }
+    public function exportData()
+    {
+        // This method would be implemented for full export functionality
+        // Could use Laravel Excel or other export library
+        
+        // $this->dispatchBrowserEvent('notify', [
+        //     'type' => 'success',
+        //     'message' => 'Export started! The file will be downloaded shortly.'
+        // ]);
+
+        $this->dispatch('notify', type: 'success', message: 'Export started! The file will be downloaded shortly.');
+
+    }
+    
+    protected function calculateStats()
+    {
+        // Query builder for user stats - respect company admin restrictions
+        $userQuery = User::query();
+        
+        if (auth()->user()->hasRole('company_admin')) {
+            $userQuery->where('company_id', auth()->user()->company_id);
         }
         
-        $user->update($userData);
+        // Total users
+        $this->totalUsers = $userQuery->count();
         
-        $this->reset(['userId', 'name', 'email', 'role', 'password', 'showCreateModal']);
-        $this->dispatchBrowserEvent('user-updated', ['message' => 'User updated successfully!']);
+        // Active users
+        $this->activeUsers = (clone $userQuery)->where('status', 'active')->count();
+        
+        // Active admins
+        $this->activeAdmins = (clone $userQuery)
+            ->where('status', 'active')
+            ->whereHas('role', function($query) {
+                $query->whereIn('name', ['super_admin', 'company_admin']);
+            })
+            ->count();
+        
+        // Company admins
+        $this->companyAdmins = (clone $userQuery)
+            ->whereHas('role', function($query) {
+                $query->where('name', 'company_admin');
+            })
+            ->count();
+        
+        // Pending verifications
+        $this->pendingVerifications = (clone $userQuery)
+            ->whereNull('email_verified_at')
+            ->count();
+        
+        // Recent verifications (last 7 days)
+        $this->recentVerifications = (clone $userQuery)
+            ->whereNotNull('email_verified_at')
+            ->where('email_verified_at', '>=', now()->subDays(7))
+            ->count();
+        
+        // Blocked users
+        $this->blockedUsers = (clone $userQuery)
+            ->where('status', 'inactive')
+            ->count();
+        
+        // Blocked companies - only for super admin
+        if (auth()->user()->hasRole('super_admin')) {
+            $this->blockedCompanies = Company::where('is_blocked', true)->count();
+        } else {
+            $this->blockedCompanies = 0;
+        }
     }
-
-    public function confirmUserDeletion($id)
-    {
-        $this->userId = $id;
-       // $this->dispatchBrowserEvent('confirm-user-deletion');
-    }
-
-    public function deleteUser()
-    {
-        $user = User::findOrFail($this->userId);
-        $user->delete();
-        
-        $this->reset('userId');
-        $this->dispatchBrowserEvent('user-deleted', ['message' => 'User deleted successfully!']);
-    }
-
-    // public function createAccessRequest()
-    // {
-    //     if ($this->requestType === 'individual') {
-    //         $this->validate([
-    //             'selectedUsers' => 'required|array|min:1',
-    //             'requestReason' => 'required|min:10',
-    //             'accessLevel' => 'required',
-    //             'expiryDate' => 'nullable|date|after:today',
-    //         ]);
-            
-    //         foreach ($this->selectedUsers as $userId) {
-    //             AccessRequest::create([
-    //                 'requester_id' => Auth::id(),
-    //                 'external_user_id' => $userId,
-    //                 'reason' => $this->requestReason,
-    //                 'access_level' => $this->accessLevel,
-    //                 'expiry_date' => $this->expiryDate,
-    //                 'status' => 'pending',
-    //             ]);
-    //         }
-    //     } else {
-    //         $this->validate([
-    //             'selectedGroups' => 'required|array|min:1',
-    //             'requestReason' => 'required|min:10',
-    //             'accessLevel' => 'required',
-    //             'expiryDate' => 'nullable|date|after:today',
-    //         ]);
-            
-    //         foreach ($this->selectedGroups as $groupId) {
-    //             $group = UserGroup::findOrFail($groupId);
-    //             foreach ($group->externalUsers as $user) {
-    //                 AccessRequest::create([
-    //                     'requester_id' => Auth::id(),
-    //                     'external_user_id' => $user->id,
-    //                     'user_group_id' => $groupId,
-    //                     'reason' => $this->requestReason,
-    //                     'access_level' => $this->accessLevel,
-    //                     'expiry_date' => $this->expiryDate,
-    //                     'status' => 'pending',
-    //                 ]);
-    //             }
-    //         }
-    //     }
-        
-    //     $this->reset(['selectedUsers', 'selectedGroups', 'requestReason', 'accessLevel', 'expiryDate', 'showRequestModal']);
-    //     $this->dispatchBrowserEvent('request-created', ['message' => 'Access request submitted successfully!']);
-    // }
-
-    public function approveRequest($id)
-    {
-        $request = AccessRequest::findOrFail($id);
-        $request->update([
-            'status' => 'approved',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
-        
-        // Update external user's access
-        $externalUser = ExternalUser::findOrFail($request->external_user_id);
-        $externalUser->update([
-            'has_access' => true,
-            'access_level' => $request->access_level,
-            'access_expires_at' => $request->expiry_date,
-        ]);
-        
-        $this->dispatchBrowserEvent('request-approved', ['message' => 'Request approved successfully!']);
-    }
-
-    public function rejectRequest($id)
-    {
-        $request = AccessRequest::findOrFail($id);
-        $request->update([
-            'status' => 'rejected',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
-        
-        $this->dispatchBrowserEvent('request-rejected', ['message' => 'Request rejected!']);
-    }
-
-    public function revokeAccess($id)
-    {
-        $externalUser = ExternalUser::findOrFail($id);
-        $externalUser->update([
-            'has_access' => false,
-            'access_revoked_at' => now(),
-            'access_revoked_by' => Auth::id(),
-        ]);
-        
-        $this->dispatchBrowserEvent('access-revoked', ['message' => 'User access revoked successfully!']);
-    }
-
+    
     public function render()
     {
-        $query = $this->activeTab === 'internal' 
-            ? User::query() 
-            : ExternalUser::query();
-            
-        if (!empty($this->searchTerm)) {
-            $query->where(function($q) {
-                $q->where('name', 'like', '%' . $this->searchTerm . '%')
-                  ->orWhere('email', 'like', '%' . $this->searchTerm . '%');
-            });
+        // Get data for filters
+        $companies = [];
+        $roles = [];
+        
+        if (auth()->user()->hasRole('super_admin')) {
+            $companies = Company::orderBy('company_name')->get();
+            $roles = Role::orderBy('display_name')->get();
+        } else if (auth()->user()->hasRole('company_admin')) {
+            $companies = Company::where('id', auth()->user()->company_id)->get();
+            $roles = Role::where('name', '!=', 'super_admin')
+                ->orderBy('display_name')
+                ->get();
         }
         
-        $users = $query->orderBy($this->sortField, $this->sortDirection)
-                       ->paginate(10);
-                       
-        $pendingRequests = AccessRequest::where('status', 'pending')->count();
-        
         return view('livewire.user-management.dashboard', [
-            'users' => $users,
-            'pendingRequests' => $pendingRequests,
-            'externalUsers' => ExternalUser::whereNotIn('id', $this->selectedUsers)->get(),
-            'accessRequests' => AccessRequest::with(['requester', 'externalUser'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10),
+            'companies' => $companies,
+            'roles' => $roles,
         ]);
     }
 }

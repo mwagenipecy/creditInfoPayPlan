@@ -4,7 +4,7 @@
 
 
  
- <livewire:user-management.dashboard />
+ <livewire:search-analytics.dashboard />
  
 
  @endsection

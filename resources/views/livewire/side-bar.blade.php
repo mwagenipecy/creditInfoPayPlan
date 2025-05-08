@@ -23,69 +23,33 @@
       </div>
 
       <!-- Navigation -->
-    <!-- Navigation -->
+<!-- Navigation -->
 <nav class="flex-1 px-4 py-5 space-y-1">
   <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main</p>
   
-
-  <a href="{{ route('dashboard') }}"
-   data-page="dashboard"
-   class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium 
-   {{ request()->routeIs('dashboard') 
-        ? 'bg-red-50 text-[#C40F12]' 
-        : 'text-gray-700 hover:bg-red-50 hover:text-[#C40F12]' }} group">
-
-    <span class="inline-flex items-center justify-center h-8 w-8 text-lg 
-    {{ request()->routeIs('dashboard') 
-        ? 'text-[#C40F12]' 
-        : 'text-gray-500 group-hover:text-[#C40F12]' }}">
+  <a href="{{ route('dashboard') }}" data-page="dashboard" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+    <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-tachometer-alt nav-icon"></i>
     </span>
-    
     <span class="ml-3 link-text">Dashboard</span>
-</a>
+  </a>
 
-<a href="{{ route('document.list') }}"
-   data-page="verification"
-   class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium 
-   {{ request()->routeIs('document.*') 
-        ? 'bg-red-50 text-[#C40F12]' 
-        : 'text-gray-700 hover:bg-red-50 hover:text-[#C40F12]' }} group">
-
-    <span class="inline-flex items-center justify-center h-8 w-8 text-lg 
-    {{ request()->routeIs('document.*') 
-        ? 'text-[#C40F12]' 
-        : 'text-gray-500 group-hover:text-[#C40F12]' }}">
+  <a href="{{ route('document.list') }}" data-page="verification" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+    <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-file-upload nav-icon"></i>
     </span>
-    
     <span class="ml-3 link-text">Document Verification</span>
-    
     <span class="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">Required</span>
-</a>
-
+  </a>
   
-<a href="{{ route('payment.plan') }}" 
-   data-page="payments"
-   class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium 
-   {{ request()->routeIs('payment.*') 
-        ? 'bg-red-50 text-[#C40F12]' 
-        : 'text-gray-700 hover:bg-red-50 hover:text-[#C40F12]' }} group">
-
-    <span class="inline-flex items-center justify-center h-8 w-8 text-lg 
-    {{ request()->routeIs('payment.*') 
-        ? 'text-[#C40F12]' 
-        : 'text-gray-500 group-hover:text-[#C40F12]' }}">
+  <a href="{{ route('payment.plan') }}" data-page="payments" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+    <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-credit-card nav-icon"></i>
     </span>
-
     <span class="ml-3 link-text">Payments</span>
-</a>
+  </a>
 
-
-
-  
-  <a href="{{ route('user.list') }}"  data-page="users" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  <a href="{{ route('user.list') }}" data-page="users" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-users nav-icon"></i>
     </span>
@@ -95,7 +59,7 @@
   
   <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2">Analytics</p>
   
-  <a href="#" data-page="reports" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  <a href="{{ route('usage.dashboard') }}" data-page="reports" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-chart-line nav-icon"></i>
     </span>
@@ -136,3 +100,8 @@
     </div>
   </aside>
 </div>
+
+
+
+
+
