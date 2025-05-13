@@ -165,7 +165,7 @@
           </div>
           
           <div class="mt-6 grid grid-cols-2 gap-3">
-            <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-200 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <a href="{{ route('login.google') }}" class="w-full inline-flex justify-center py-2 px-4 border border-gray-200 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
               <i class="fab fa-google text-red-500"></i>
             </a>
             <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-200 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">

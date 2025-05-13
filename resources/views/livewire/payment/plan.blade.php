@@ -370,7 +370,93 @@
 @if($showModal)
     <div class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-3xl rounded-xl shadow-2xl relative overflow-hidden">
-            <!-- Loading Spinner Overlay -->
+            
+            @if($paymentStatus === 'processing')
+                <!-- Processing State -->
+                <div class="absolute inset-0 bg-white flex flex-col items-center justify-center z-10 p-8">
+                    <div class="relative h-24 w-24 mb-6">
+                        <div class="absolute animate-ping h-full w-full rounded-full bg-red-400 opacity-75"></div>
+                        <div class="relative flex items-center justify-center h-full w-full rounded-full bg-red-500">
+                            <svg class="h-12 w-12 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Processing Payment</h3>
+                    <p class="text-gray-600 text-center mb-6">Please check your phone for the payment prompt</p>
+                    
+                    <!-- Countdown Timer -->
+                    <div class="text-center mb-6">
+                        <p class="text-sm text-gray-500 mb-2">Time remaining</p>
+                        <div class="text-3xl font-mono font-bold text-red-600">{{ sprintf('%02d:%02d', floor($timeRemaining / 60), $timeRemaining % 60) }}</div>
+                    </div>
+                    
+                    <!-- Cancel Button -->
+                    <button wire:click="cancelPayment" 
+                        class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition duration-200 flex items-center">
+                        <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancel Payment
+                    </button>
+                </div>
+            @endif
+            
+            @if($paymentStatus === 'success')
+                <!-- Success State -->
+                <div class="absolute inset-0 bg-white flex flex-col items-center justify-center z-10 p-8">
+                    <div class="relative h-24 w-24 mb-6">
+                        <div class="flex items-center justify-center h-full w-full rounded-full bg-green-500">
+                            <svg class="h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-green-800 mb-2">Payment Successful!</h3>
+                    <p class="text-gray-600 text-center mb-6">Your payment has been processed successfully</p>
+                    <div class="text-center mb-6">
+                        <p class="text-sm text-gray-500">Transaction ID</p>
+                        <p class="font-mono text-lg font-semibold">{{ $payment->order_id ?? 'N/A' }}</p>
+                    </div>
+                    <button wire:click="closeModal" 
+                        class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-200">
+                        Continue
+                    </button>
+                </div>
+            @endif
+            
+            @if($paymentStatus === 'failed')
+                <!-- Error State -->
+                <div class="absolute inset-0 bg-white flex flex-col items-center justify-center z-10 p-8">
+                    <div class="relative h-24 w-24 mb-6">
+                        <div class="flex items-center justify-center h-full w-full rounded-full bg-red-500">
+                            <svg class="h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-red-800 mb-2">Payment Failed</h3>
+                    <p class="text-gray-600 text-center mb-2">{{ $errorMessage }}</p>
+                    @if($payment && $payment->order_id)
+                        <div class="text-center mb-6">
+                            <p class="text-sm text-gray-500">Order ID</p>
+                            <p class="font-mono text-lg font-semibold">{{ $payment->order_id }}</p>
+                        </div>
+                    @endif
+                    <div class="flex space-x-4">
+                        <button wire:click="retryPayment" 
+                            class="px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200">
+                            Try Again
+                        </button>
+                        <button wire:click="closeModal" 
+                            class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition duration-200">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Loading Spinner for Form Actions -->
             <div wire:loading.delay.long class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
                 <div class="relative h-12 w-12">
                     <div class="absolute animate-ping h-full w-full rounded-full bg-red-400 opacity-75"></div>
@@ -405,7 +491,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Number of Statements</label>
                             <div class="relative">
                                 <input type="number" wire:model.live="statementCount" min="1"
-                                    class="w-full pl-4 pr-12 py-3 rounded-lg border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                    class="w-full pl-4 pr-12 py-3 rounded-lg border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm"
+                                    @if($paymentStatus === 'processing') disabled @endif>
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <span class="text-gray-400">qty</span>
                                 </div>
@@ -430,12 +517,13 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Network</label>
                             <div class="relative">
                                 <select wire:model="network"
-                                    class="w-full pl-4 pr-10 py-3 rounded-lg appearance-none border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                    class="w-full pl-4 pr-10 py-3 rounded-lg appearance-none border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm"
+                                    @if($paymentStatus === 'processing') disabled @endif>
                                     <option value="">-- Choose network --</option>
-                                    <option value="vodacom">Vodacom</option>
-                                    <option value="tigo">Tigo</option>
-                                    <option value="airtel">Airtel</option>
-                                    <option value="halotel">Halotel</option>
+                                    <option value="VODACOM">Vodacom</option>
+                                    <option value="TIGO">Tigo</option>
+                                    <option value="AIRTEL">Airtel</option>
+                                    <option value="HALOTEL">Halotel</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
                                     <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -449,13 +537,16 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                             <input type="text" wire:model="phone" placeholder="07XXXXXXXX"
-                                class="w-full pl-4 py-3 rounded-lg border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                class="w-full pl-4 py-3 rounded-lg border-gray-200 focus:ring-red-500 focus:border-red-500 shadow-sm"
+                                @if($paymentStatus === 'processing') disabled @endif>
                             @error('phone') <span class="text-red-600 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="pt-2">
                             <label class="flex items-start cursor-pointer">
-                                <input type="checkbox" wire:model="acceptTerms" class="mt-1 rounded text-red-500 border-gray-300 focus:ring-red-500">
+                                <input type="checkbox" wire:model="acceptTerms" 
+                                    class="mt-1 rounded text-red-500 border-gray-300 focus:ring-red-500"
+                                    @if($paymentStatus === 'processing') disabled @endif>
                                 <span class="ml-2 text-sm text-gray-600 leading-5">
                                     I accept the <a href="#" class="text-red-500 font-medium hover:underline">terms & conditions</a>.
                                 </span>
@@ -468,25 +559,30 @@
 
             <!-- Footer -->
             <div class="bg-gray-50 p-6 border-t border-gray-100 flex flex-col sm:flex-row-reverse sm:justify-between sm:items-center gap-4">
-                <button wire:click="submitPayment"
-                    class="w-full sm:w-auto px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition shadow-sm flex justify-center items-center">
-                    <span>Confirm & Pay</span>
-                    <svg class="ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                </button>
-                <button wire:click="$set('showModal', false)" 
-                    class="w-full sm:w-auto px-6 py-3 bg-white text-gray-600 font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition flex justify-center items-center">
-                    <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span>Cancel</span>
-                </button>
+                @if($paymentStatus !== 'processing')
+                    <button wire:click="submitPayment"
+                        class="w-full sm:w-auto px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition shadow-sm flex justify-center items-center disabled:opacity-50"
+                        @if($paymentStatus === 'processing') disabled @endif>
+                        <span>Confirm & Pay</span>
+                        <svg class="ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </button>
+                @endif
+                
+                @if($paymentStatus !== 'processing')
+                    <button wire:click="closeModal" 
+                        class="w-full sm:w-auto px-6 py-3 bg-white text-gray-600 font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition flex justify-center items-center">
+                        <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Cancel</span>
+                    </button>
+                @endif
             </div>
         </div>
     </div>
 @endif
-
 
 
 </div>

@@ -28,13 +28,16 @@
                 <h3 class="text-lg font-bold mb-4">Contact Us</h3>
                 <ul class="space-y-2">
                     <li class="text-sm text-gray-400">
-                        <i class="fas fa-envelope mr-2"></i> support@creditinfo.com
+                        <i class="fas fa-envelope mr-2"></i> citinfo@creditinfo.co.tz
                     </li>
                     <li class="text-sm text-gray-400">
-                        <i class="fas fa-phone mr-2"></i> +1 (800) 123-4567
+                        <i class="fas fa-phone mr-2"></i> +255 22 276 0742
                     </li>
                     <li class="text-sm text-gray-400">
-                        <i class="fas fa-map-marker-alt mr-2"></i> 123 Financial St, New York, NY
+                        <i class="fas fa-map-marker-alt mr-2"></i> Tanzanite Park, New Bagamoyo Road,
+                        
+                        <br>
+                        PO Box 12403, Dar es Salaam
                     </li>
                 </ul>
             </div>

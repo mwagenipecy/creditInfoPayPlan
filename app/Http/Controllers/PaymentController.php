@@ -12,4 +12,10 @@ class PaymentController extends Controller
        
         return view('pages.payment.dashboard');
     }
+
+
+    public function paymentLogs(){
+        return view('pages.payment.logs');
+
+    }
 }

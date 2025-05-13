@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Document;
 
+use App\Models\User;
 use Livewire\Component;
 use App\Models\Company;
 use Illuminate\Support\Facades\Log;
@@ -100,6 +101,14 @@ class RegisterCompany extends Component
             $company=  Company::create($validatedData);
               
               // Reset form and show success message
+
+
+              // assign user the company id and be the admin of the company
+              $user=User::find(auth()->user()->id);
+              $user->update(['role_id'=>2]);
+
+
+
               $this->reset();
               $this->successMessage = 'Company registered successfully!';
               $this->errorMessage = '';

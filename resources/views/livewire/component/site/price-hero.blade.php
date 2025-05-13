@@ -12,18 +12,18 @@
                 <i class="fas fa-tag mr-2"></i> Transparent Pricing
             </div>
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Statement Processing That <span class="text-[#FF8A8C]">Scales</span> With Your Institution
+                Credit Report Processing That <span class="text-[#FF8A8C]">Scales</span> With Your Institution
             </h1>
             <p class="text-xl text-gray-300 mb-8 leading-relaxed">
-                Optimize your statement processing costs with our tiered pricing structure designed for financial institutions of all sizes. Choose the plan that best fits your transaction volume and budget.
+                Optimize your credit report processing costs with our tiered pricing structure designed for financial institutions of all sizes. Choose the plan that best fits your transaction volume and budget.
             </p>
             <div class="flex flex-wrap gap-4">
                 <a href="#pricing-plans" class="px-6 py-3 bg-[#C40F12] hover:bg-[#A00D10] rounded-md text-white font-medium transition shadow-md hover:shadow-lg">
                     View Pricing Plans
                 </a>
-                <a href="#" class="px-6 py-3 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-md text-white font-medium transition border border-white border-opacity-20">
+                <!-- <a href="#" class="px-6 py-3 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-md text-white font-medium transition border border-white border-opacity-20">
                     Schedule a Demo
-                </a>
+                </a> -->
             </div>
         </div>
     </div>
@@ -35,6 +35,7 @@
         </svg>
     </div>
 </div>
+
 
 <!-- Pricing Toggle Section -->
 <div class="max-w-6xl mx-auto px-4 pt-8 pb-4">

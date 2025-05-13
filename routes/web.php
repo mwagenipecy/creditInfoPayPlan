@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\CreditReportController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\MyPackageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Site\WelcomeController;
 use App\Http\Controllers\UsageController;
@@ -11,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
+
+
+Route::get('login/google', [GoogleController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('login/google/callback_url', [GoogleController::class, 'handleGoogleCallback']);
 
 
 Route::middleware([
@@ -40,8 +46,23 @@ Route::middleware([
     Route::group(['prefix' => 'payment'], function () {
 
       Route::get('plans',[PaymentController::class,'index'])->name('payment.plan');
+      Route::get('logs',[PaymentController::class,'paymentLogs'])->name('payment.log');
 
     });
+
+
+
+    ////////////////////////?MY PACKAGE LIST && SECTIONS /////////////////////////
+
+    Route::group(['prefix' => 'package'], function () {
+
+      //  Route::get('plans',[PaymentController::class,'index'])->name('payment.plan');
+
+      Route::get('active',[MyPackageController::class,'activePackage'])->name('package.active');
+      Route::get('expired',[MyPackageController::class,'expiredPackage'])->name('expired.package');
+      Route::get('usage',[MyPackageController::class,'usageHistory'])->name('usage.history');
+  
+      });
 
 
 

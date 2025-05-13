@@ -41,7 +41,7 @@
           <!-- User dropdown -->
           <div class="relative">
             <div onclick="toggleUserMenu()" class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-              <img src="https://ui-avatars.com/api/?name=A+User&background=C40F12&color=fff&bold=true"
+              <img src="https://ui-avatars.com/api/?name={{ auth()->user()->first_name }}+{{ auth()->user()->last_name }}&background=C40F12&color=fff&bold=true"
                    class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" />
               <div class="hidden md:block">
                 <div class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</div>

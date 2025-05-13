@@ -11,13 +11,13 @@
       <div class="px-6 py-4 border-b border-gray-100">
         <div class="flex items-center space-x-3">
           <div class="relative">
-            <img src="https://ui-avatars.com/api/?name=Admin+User&background=C40F12&color=fff&bold=true"
+            <img src="https://ui-avatars.com/api/?name={{ auth()->user()->first_name }}+{{ auth()->user()->last_name }}&background=C40F12&color=fff&bold=true"
                  class="w-10 h-10 rounded-full border-2 border-red-100" />
             <span class="pulse-notification"></span>
           </div>
           <div>
             <h4 class="font-medium text-gray-800">{{ auth()->user()->name }}</h4>
-            <p class="text-xs text-gray-500">System Administrator</p>
+            <p class="text-xs text-gray-500"> {{ DB::table('roles')->where('id', auth()->user()->role_id)->first()?->display_name ?? "System User" }} </p>
           </div>
         </div>
       </div>
@@ -49,6 +49,58 @@
     <span class="ml-3 link-text">Payments</span>
   </a>
 
+
+
+  <div class="relative sidebar-dropdown">
+  <button id="packages-toggle" 
+          class="sidebar-link flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+    <div class="flex items-center">
+      <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
+        <i class="fas fa-box nav-icon"></i>
+      </span>
+      <span class="ml-3 link-text">My Packages</span>
+    </div>
+    <span class="ml-auto transition-transform duration-200 packages-chevron">
+      <i class="fas fa-chevron-down text-xs"></i>
+    </span>
+  </button>
+  
+  <!-- Dropdown Menu -->
+  <div id="packages-dropdown" 
+       class="mt-1 ml-8 space-y-1 hidden transition-all duration-200 opacity-0 transform scale-y-95">
+    
+    <!-- Active Packages -->
+    <a href="{{ route('package.active') }}" 
+       class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-[#C40F12] group">
+      <span class="inline-flex items-center justify-center h-6 w-6 text-xs text-gray-400 group-hover:text-[#C40F12]">
+        <i class="fas fa-check-circle"></i>
+      </span>
+      <span class="ml-2 link-text">Active Packages</span>
+    </a>
+    
+    <!-- Expired Packages -->
+    <a href="{{ route('expired.package') }}" 
+       class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-[#C40F12] group">
+      <span class="inline-flex items-center justify-center h-6 w-6 text-xs text-gray-400 group-hover:text-[#C40F12]">
+        <i class="fas fa-times-circle"></i>
+      </span>
+      <span class="ml-2 link-text">Expired Packages</span>
+    </a>
+    
+    <!-- Usage History -->
+    <a href="{{ route('usage.history') }}" 
+       class="sidebar-link flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-[#C40F12] group">
+      <span class="inline-flex items-center justify-center h-6 w-6 text-xs text-gray-400 group-hover:text-[#C40F12]">
+        <i class="fas fa-history"></i>
+      </span>
+      <span class="ml-2 link-text">Usage History</span>
+    </a>
+  </div>
+</div>
+
+
+
+
   <a href="{{ route('credit.report') }}" data-page="credit-report" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
   <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
     <i class="fas fa-file-alt nav-icon"></i>
@@ -67,18 +119,18 @@
   
   <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2">Analytics</p>
   
-  <a href="{{ route('usage.dashboard') }}" data-page="reports" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  <!-- <a href="{{ route('usage.dashboard') }}" data-page="reports" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-chart-line nav-icon"></i>
     </span>
     <span class="ml-3 link-text">Usage Reports</span>
-  </a>
+  </a> -->
   
-  <a href="#" data-page="statements" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  <a href="{{ route('payment.log') }}" data-page="Payment Logs" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-file-invoice nav-icon"></i>
     </span>
-    <span class="ml-3 link-text">Statements</span>
+    <span class="ml-3 link-text">Payment Log</span>
   </a>
   
   <a href="#" data-page="support" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
@@ -107,6 +159,41 @@
       </div>
     </div>
   </aside>
+
+
+
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('packages-toggle');
+    const dropdown = document.getElementById('packages-dropdown');
+    const chevron = document.querySelector('.packages-chevron');
+    
+    toggle.addEventListener('click', function() {
+        const isHidden = dropdown.classList.contains('hidden');
+        
+        if (isHidden) {
+            dropdown.classList.remove('hidden');
+            setTimeout(() => {
+                dropdown.classList.remove('opacity-0', 'scale-y-95');
+                dropdown.classList.add('opacity-100', 'scale-y-100');
+                chevron.classList.add('rotate-180');
+            }, 10);
+        } else {
+            dropdown.classList.remove('opacity-100', 'scale-y-100');
+            dropdown.classList.add('opacity-0', 'scale-y-95');
+            chevron.classList.remove('rotate-180');
+            setTimeout(() => {
+                dropdown.classList.add('hidden');
+            }, 200);
+        }
+    });
+});
+</script>
+
+
+
+
 </div>
 
 
