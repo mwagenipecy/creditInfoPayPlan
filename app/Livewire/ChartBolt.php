@@ -49,7 +49,7 @@ class ChartBolt extends Component
 
     // System prompt in Swahili
     private const SYSTEM_PROMPT_SW = "
-    Wewe ni msaidizi wa AI wa Creditinfo Tanzania. Jibu maswali TU kulingana na taarifa zilizotolewa. Ikiwa huwezi kujibu, pendekeza kuwasiliana na info@creditinfo.co.tz au kutembelea ofisi yetu.
+    mimi ni msaidizi wa AI wa Creditinfo Tanzania. Jibu maswali TU kulingana na taarifa zilizotolewa. Ikiwa huwezi kujibu, pendekeza kuwasiliana na info@creditinfo.co.tz au kutembelea ofisi yetu.
     
     Weka majibu MAFUPI (sentensi 2-3 kwa upeo) na yaliyoundwa vizuri bila herufi maalum.
     

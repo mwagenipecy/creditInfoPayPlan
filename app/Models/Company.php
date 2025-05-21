@@ -84,4 +84,14 @@ class Company extends Model
     }
 
 
+
+    public function approvedDocument(){
+
+        return $this->documents()
+        ->where('status', 'approved')
+        ->count();
+
+        
+    }
+
 }

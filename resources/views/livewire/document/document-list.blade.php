@@ -1,7 +1,3 @@
-<div>
-
-
-
 <div class="bg-gray-50 min-h-screen">
   <div class="container mx-auto px-4 py-8 max-w-full">
     <!-- Page Header -->
@@ -10,9 +6,111 @@
         <h2 class="text-2xl font-bold text-gray-800">Company Verification Management</h2>
         <p class="text-sm text-gray-600 mt-1">Manage and review company verifications</p>
       </div>
+
+      @if(auth()->user()->role_id==2)
+      @if($this->hasRegisterTheCompany)
+
+
+      @else
+
       <a href="{{ route('add.company') }}" class="px-4 py-2 bg-[#C40F12] text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors">
         <i class="fas fa-plus mr-2"></i> Register New Company
       </a>
+
+      @endif 
+      @endif 
+    </div>
+
+
+
+    @if(auth()->user()->role_id==1)
+    <!-- Analytics Dashboard -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <!-- Total Companies -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Total Companies</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ $stats['total_companies'] }}</h3>
+          </div>
+          <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-building text-blue-500 text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">{{ $stats['companies_this_month'] }} new this month</div>
+      </div>
+
+      <!-- Pending Review -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Pending Review</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ $stats['pending_review'] }}</h3>
+          </div>
+          <div class="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-clock text-yellow-500 text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">{{ $stats['pending_review_change'] }}% from last week</div>
+      </div>
+
+      <!-- Approved Companies -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Approved</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ $stats['approved'] }}</h3>
+          </div>
+          <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">{{ number_format($stats['approval_rate'], 1) }}% approval rate</div>
+      </div>
+
+      <!-- Documents Pending -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Missing Documents</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ $stats['missing_documents'] }}</h3>
+          </div>
+          <div class="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-file-alt text-red-500 text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">{{ $stats['document_completion_rate'] }}% document completion rate</div>
+      </div>
+    </div>
+
+    <!-- Status Distribution Chart -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+      <h3 class="text-lg font-medium text-gray-800 mb-4">Verification Status Distribution</h3>
+      <div class="flex items-center justify-between">
+        <div class="w-full grid grid-cols-5 gap-2">
+          @foreach(['draft', 'pending_review', 'changes_requested', 'approved', 'rejected'] as $chartStatus)
+          <div>
+            <div class="relative pt-1">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <span class="text-xs font-semibold inline-block py-1 px-2 rounded-full {{ $this->getStatusColor($chartStatus) }}">
+                    {{ $this->getStatusLabel($chartStatus) }}
+                  </span>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-semibold inline-block text-gray-600">
+                    {{ $stats['status_counts'][$chartStatus] ?? 0 }}
+                  </span>
+                </div>
+              </div>
+              <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                <div style="width:{{ $stats['status_percentages'][$chartStatus] ?? 0 }}%" class="{{ $this->getStatusBarColor($chartStatus) }} rounded"></div>
+              </div>
+            </div>
+          </div>
+          @endforeach
+        </div>
+      </div>
     </div>
 
     <!-- Filter and Search -->
@@ -58,6 +156,10 @@
         </button>
       </div>
     </div>
+
+    @endif 
+
+
 
     <!-- Company Listing Table -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
@@ -141,7 +243,3 @@
     </div>
   </div>
 </div>
-
-
-            
-            </div>

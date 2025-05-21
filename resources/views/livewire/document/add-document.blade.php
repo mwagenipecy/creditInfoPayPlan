@@ -2,6 +2,9 @@
 <div class="bg-gray-50">
   <div class="container mx-auto px-4 py-2 max-w-full">
     <!-- Page Header -->
+
+
+    @if(auth()->user()->role_id==2)
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-gray-800">Company & Document Verification</h2>
       <p class="text-sm text-gray-600 mt-1">
@@ -249,8 +252,11 @@
       </button>
     </div>
 
+    @endif 
+
+
     <!-- Admin Review Panel (visible only to admins) -->
-    @if(auth()->user()->is_admin)
+    @if(auth()->user()->role_id==1)
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-gray-800">Admin Review Panel</h3>
@@ -288,12 +294,26 @@
             </div>
 
             <div class="flex justify-end gap-2">
+
+
+            @if($document->status_label!='Approved')
+
+            
               <button wire:click="adminReviewDocument({{ $document->id }}, 'approved')" class="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200">
                 Approve
               </button>
+
+              @endif 
+
+              @if($document->status_label=='Approved')
+
+              @else
               <button wire:click="adminReviewDocument({{ $document->id }}, 'rejected')" class="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200">
                 Reject
               </button>
+
+              @endif
+
               <button wire:click="adminReviewDocument({{ $document->id }}, 'changes_requested')" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-medium hover:bg-yellow-200">
                 Request Changes
               </button>
@@ -304,15 +324,34 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+
+        @if($company->completed_documents_count==6)
+
+
           <button wire:click="adminReviewAll('approved')" class="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-opacity-50 transition-colors">
             Approve All
           </button>
+
+        
+       
+
+          @if($company->approvedDocument() >=1 )
+
+          @else
+
           <button wire:click="adminReviewAll('rejected')" class="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-opacity-50 transition-colors">
             Reject All
           </button>
+          @endif 
+
+
           <button wire:click="adminReviewAll('changes_requested')" class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 transition-colors">
             Request Changes for All
           </button>
+
+          @endif
+          
+          
         </div>
       </div>
       @endif

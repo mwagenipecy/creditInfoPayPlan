@@ -42,12 +42,33 @@
     <span class="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">Required</span>
   </a>
   
-  <a href="{{ route('payment.plan') }}" data-page="payments" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  @if(\App\Helpers\MenuHelper::canAccessMenu('payment'))
+
+
+  <a  href="{{ route('payment.plan') }}" data-page="payments" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-credit-card nav-icon"></i>
     </span>
     <span class="ml-3 link-text">Payments</span>
   </a>
+
+  @else
+
+
+  <a 
+  href="#" 
+  class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed pointer-events-none"
+>
+  <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-400">
+    <i class="fas fa-credit-card nav-icon"></i>
+  </span>
+  <span class="ml-3 link-text">Payments</span>
+</a>
+
+
+
+  @endif 
+
 
 
 
