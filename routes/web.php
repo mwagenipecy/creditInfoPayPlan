@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Site\WelcomeController;
 use App\Http\Controllers\UsageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -88,6 +89,17 @@ Route::middleware([
        Route::group(['prefix' => 'credit'], function () {
         Route::get('report',[CreditReportController::class,'index'])->name('credit.report');
         
+       });
+
+
+
+       /// profile settings 
+
+       Route::group(['prefix'=>'settings'],function(){
+
+         Route::get('/',[UserProfileController::class,'userSettings'])->name('user.setting');
+         Route::get('profile',[UserProfileController::class,'userProfile'])->name('user.profile');
+
        });
 
     

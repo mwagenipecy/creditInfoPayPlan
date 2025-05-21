@@ -54,10 +54,10 @@
             
             <!-- Dropdown Menu -->
             <div id="userDropdownMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden z-50">
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#C40F12]">
+              <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#C40F12]">
                 <i class="fas fa-user mr-2"></i> Profile
               </a>
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#C40F12]">
+              <a href="{{ route('user.setting') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#C40F12]">
                 <i class="fas fa-cog mr-2"></i> Settings
               </a>
               <div class="border-t border-gray-100 my-1"></div>
