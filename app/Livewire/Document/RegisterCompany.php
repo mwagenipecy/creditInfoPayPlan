@@ -128,4 +128,6 @@ class RegisterCompany extends Component
     {
         return view('livewire.document.register-company');
     }
+
+    
 }

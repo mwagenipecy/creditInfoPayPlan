@@ -161,11 +161,11 @@
     <span class="ml-3 link-text">Support</span>
   </a>
   
-  <a href="#" data-page="settings" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+  <a href="{{ route('admin.callbacks') }}" data-page="settings" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
     <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
       <i class="fas fa-cog nav-icon"></i>
     </span>
-    <span class="ml-3 link-text">Settings</span>
+    <span class="ml-3 link-text"> Payment Callback</span>
   </a>
 </nav>
 

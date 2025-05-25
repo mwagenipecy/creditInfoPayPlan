@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\API\PaymentCallbackController;
 use App\Http\Controllers\CreditReportController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GoogleController;
@@ -101,6 +103,18 @@ Route::middleware([
          Route::get('profile',[UserProfileController::class,'userProfile'])->name('user.profile');
 
        });
+
+
+
+       Route::get('admin/payments/callback',[AdminController::class,'index'])->name('admin.callbacks');
+       // unmatched callback 
+       Route::get('/admin/payment-callbacks/unmatched', [PaymentCallbackController::class, 'getUnmatchedCallbacks']);
+       // Manually process an unmatched callback
+       Route::post('/admin/payment-callbacks/{callbackLogId}/process', [PaymentCallbackController::class, 'processUnmatchedCallback']);
+       // Get all callback logs with filters
+       Route::get('/admin/payment-callbacks', [PaymentCallbackController::class, 'getAllCallbackLogs']);
+       // Get callback statistics
+       Route::get('/admin/payment-callbacks/stats', [PaymentCallbackController::class, 'getCallbackStats']);
 
     
 

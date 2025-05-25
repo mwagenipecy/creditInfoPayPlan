@@ -200,8 +200,10 @@ class Account extends Model
     // Get total remaining reports for a user across all valid accounts
     public static function getTotalRemainingReports($userId, $companyId)
     {
-        return self::where('user_id', $userId)
-                  ->where('company_id', $companyId)
+        return self::
+      //  where('user_id', $userId)
+        //          ->
+                  where('company_id', $companyId)
                   ->validAccounts()
                   ->sum('remaining_reports');
     }
@@ -209,8 +211,10 @@ class Account extends Model
     // Get the best account to use (oldest first, FIFO)
     public static function getAccountToUse($userId, $companyId)
     {
-        return self::where('user_id', $userId)
-                  ->where('company_id', $companyId)
+        return self::
+        //where('user_id', $userId)
+               //   ->
+                  where('company_id', $companyId)
                   ->validAccounts()
                   ->where('remaining_reports', '>', 0)
                   ->orderBy('valid_until', 'asc') // Use oldest accounts first

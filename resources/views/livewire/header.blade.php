@@ -14,26 +14,26 @@
 
         <!-- Search & Actions -->
         <div class="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-8">
-          <div class="relative flex-1">
+          <!-- <div class="relative flex-1">
             <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               <i class="fas fa-search"></i>
             </span>
             <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 text-sm" />
-          </div>
+          </div> -->
         </div>
 
         <!-- User Info / Actions -->
         <div class="flex items-center space-x-4">
           <!-- Notifications -->
-          <button class="relative p-2 text-gray-500 hover:text-[#C40F12] rounded-full hover:bg-red-50 transition-colors">
+          <!-- <button class="relative p-2 text-gray-500 hover:text-[#C40F12] rounded-full hover:bg-red-50 transition-colors">
             <i class="fas fa-bell"></i>
             <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-          </button>
+          </button> -->
           
           <!-- Messages -->
-          <button class="relative p-2 text-gray-500 hover:text-[#C40F12] rounded-full hover:bg-red-50 transition-colors">
+          <!-- <button class="relative p-2 text-gray-500 hover:text-[#C40F12] rounded-full hover:bg-red-50 transition-colors">
             <i class="fas fa-envelope"></i>
-          </button>
+          </button> -->
           
           <!-- Divider -->
           <div class="h-8 border-l border-gray-200"></div>

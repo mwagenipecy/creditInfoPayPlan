@@ -171,7 +171,7 @@ class Plan extends Component
             $this->payment = $paymentService->createPayment([
                 'network_type' => strtoupper($this->network),
                 'user_id' => auth()->id(),
-                'company_id' => auth()->user()->company_id ?? 1,
+                'company_id' => auth()->user()->company_id ?? 0,
                 'mobile_number' => $this->phone,
                 'descriptions' => $this->descriptions,
                 'amount' => $this->amount,

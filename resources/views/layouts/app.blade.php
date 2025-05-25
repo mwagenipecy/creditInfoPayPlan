@@ -180,6 +180,7 @@
 
 
 </head>
+
 <body class="bg-gray-50 text-gray-800">
 
 <!-- Dark Overlay (Mobile Only) -->
@@ -191,33 +192,22 @@
   <!-- Sidebar -->
  <livewire:side-bar />
 
-
-
-
- 
-
   <!-- Main content -->
   <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
 
    <livewire:header/>
 
     <!-- Page Content Area -->
-    <main class="flex-1 p-6 lg:p-8 bg-gray-50">
-
+    <main class="flex-1 p-6 lg:p-8 bg-gray-50 overflow-y-auto">
 
      @yield('main-section')
-    
-
 
     </main>
 
-    
   </div>
 </div>
 
-
 @livewireScripts
-
 
 <script>
 
@@ -228,4 +218,8 @@ document.addEventListener('notify', event => {
 
 </script>
 </body>
+
+
+
+
 </html>

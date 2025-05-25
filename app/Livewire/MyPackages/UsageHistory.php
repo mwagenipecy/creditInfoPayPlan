@@ -5,9 +5,10 @@ namespace App\Livewire\MyPackages;
 use Livewire\Component;
 use App\Models\Account;
 use App\Models\AccountUsageLog;
+use App\Models\ReportLog;
+use App\Models\User;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class UsageHistory extends Component
@@ -17,39 +18,67 @@ class UsageHistory extends Component
     public $selectedYear;
     public $selectedMonth = '';
     public $selectedAccount = '';
-    public $perPage = 15;
-    public $dateRange = 'year';
+    public $perPage = 20;
+    public $dateRange = 'month';
     public $chartType = 'line';
+    
+    protected $queryString = [
+        'selectedYear' => ['except' => ''],
+        'selectedMonth' => ['except' => ''],
+        'selectedAccount' => ['except' => ''],
+        'dateRange' => ['except' => 'month'],
+    ];
     
     public function mount()
     {
         $this->selectedYear = date('Y');
     }
 
-    // Check if usage logs table exists
-    private function usageLogsTableExists()
+    public function updatedSelectedYear()
     {
-        return Schema::hasTable('account_usage_logs');
+        $this->resetPage();
+        $this->dispatch('chartUpdated');
     }
 
-    // Get usage data for charts with error handling and sample data fallback
-    public function getChartDataProperty()
+    public function updatedSelectedMonth()
     {
-        if (!$this->usageLogsTableExists()) {
-            return $this->getSampleChartData();
+        $this->resetPage();
+        $this->dispatch('chartUpdated');
+    }
+
+    public function updatedSelectedAccount()
+    {
+        $this->resetPage();
+        $this->dispatch('chartUpdated');
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
+
+    // Get usage data from account_usage_logs for charts
+    private function getChartData()
+    {
+        if (!auth()->check() || !auth()->user()->company_id) {
+            return collect();
         }
 
         try {
             $query = DB::table('account_usage_logs')
                 ->join('accounts', 'account_usage_logs.account_id', '=', 'accounts.id')
-                ->where('accounts.company_id', auth()->user()->company_id ?? 1)
+                ->where('accounts.company_id', auth()->user()->company_id)
+                ->where('account_usage_logs.action_type', 'report_generation')
                 ->whereYear('account_usage_logs.used_at', $this->selectedYear);
+
+            if ($this->selectedMonth) {
+                $query->whereMonth('account_usage_logs.used_at', $this->selectedMonth);
+            }
 
             if ($this->selectedAccount) {
                 $query->where('accounts.id', $this->selectedAccount);
             }
 
-            $result = null;
             switch ($this->dateRange) {
                 case 'month':
                     $result = $query->select(
@@ -60,7 +89,18 @@ class UsageHistory extends Component
                     ->groupBy('period', 'period_name')
                     ->orderBy('period')
                     ->get();
-                    break;
+                    
+                    // Fill missing months with zero
+                    $months = collect();
+                    for ($i = 1; $i <= 12; $i++) {
+                        $existing = $result->firstWhere('period', $i);
+                        $months->push((object)[
+                            'period' => $i,
+                            'period_name' => date('F', mktime(0, 0, 0, $i, 1)),
+                            'total_reports' => $existing ? $existing->total_reports : 0
+                        ]);
+                    }
+                    return $months;
 
                 case 'quarter':
                     $result = $query->select(
@@ -71,10 +111,21 @@ class UsageHistory extends Component
                     ->groupBy('period', 'period_name')
                     ->orderBy('period')
                     ->get();
-                    break;
+                    
+                    // Fill missing quarters with zero
+                    $quarters = collect();
+                    for ($i = 1; $i <= 4; $i++) {
+                        $existing = $result->firstWhere('period', $i);
+                        $quarters->push((object)[
+                            'period' => $i,
+                            'period_name' => "Q{$i}",
+                            'total_reports' => $existing ? $existing->total_reports : 0
+                        ]);
+                    }
+                    return $quarters;
 
-                default:
-                    $result = $query->select(
+                default: // year
+                    return $query->select(
                         DB::raw('YEAR(account_usage_logs.used_at) as period'),
                         DB::raw('YEAR(account_usage_logs.used_at) as period_name'),
                         DB::raw('SUM(account_usage_logs.reports_used) as total_reports')
@@ -83,126 +134,62 @@ class UsageHistory extends Component
                     ->orderBy('period')
                     ->get();
             }
-
-            // If no data found, return sample data
-            if ($result->isEmpty()) {
-                return $this->getSampleChartData();
-            }
-
-            return $result;
         } catch (\Exception $e) {
             \Log::error('Error getting chart data: ' . $e->getMessage());
-            return $this->getSampleChartData();
+            return collect();
         }
     }
 
-    // Generate sample chart data based on date range
-    private function getSampleChartData()
+    // Get hourly usage pattern from account_usage_logs
+    private function getHourlyPattern()
     {
-        switch ($this->dateRange) {
-            case 'month':
-                return collect([
-                    (object)['period' => 1, 'period_name' => 'January', 'total_reports' => 45],
-                    (object)['period' => 2, 'period_name' => 'February', 'total_reports' => 52],
-                    (object)['period' => 3, 'period_name' => 'March', 'total_reports' => 38],
-                    (object)['period' => 4, 'period_name' => 'April', 'total_reports' => 65],
-                    (object)['period' => 5, 'period_name' => 'May', 'total_reports' => 73],
-                    (object)['period' => 6, 'period_name' => 'June', 'total_reports' => 42],
-                    (object)['period' => 7, 'period_name' => 'July', 'total_reports' => 58],
-                    (object)['period' => 8, 'period_name' => 'August', 'total_reports' => 47],
-                    (object)['period' => 9, 'period_name' => 'September', 'total_reports' => 61],
-                    (object)['period' => 10, 'period_name' => 'October', 'total_reports' => 55],
-                    (object)['period' => 11, 'period_name' => 'November', 'total_reports' => 49],
-                    (object)['period' => 12, 'period_name' => 'December', 'total_reports' => 39],
-                ]);
-
-            case 'quarter':
-                return collect([
-                    (object)['period' => 1, 'period_name' => 'Q1', 'total_reports' => 135],
-                    (object)['period' => 2, 'period_name' => 'Q2', 'total_reports' => 180],
-                    (object)['period' => 3, 'period_name' => 'Q3', 'total_reports' => 166],
-                    (object)['period' => 4, 'period_name' => 'Q4', 'total_reports' => 143],
-                ]);
-
-            default: // yearly
-                $currentYear = (int)$this->selectedYear;
-                return collect([
-                    (object)['period' => $currentYear - 2, 'period_name' => $currentYear - 2, 'total_reports' => 520],
-                    (object)['period' => $currentYear - 1, 'period_name' => $currentYear - 1, 'total_reports' => 684],
-                    (object)['period' => $currentYear, 'period_name' => $currentYear, 'total_reports' => 624],
-                ]);
-        }
-    }
-
-    // Get hourly usage pattern with error handling and sample data fallback
-    public function getHourlyPatternProperty()
-    {
-        if (!$this->usageLogsTableExists()) {
-            return $this->getSampleHourlyData();
+        if (!auth()->check() || !auth()->user()->company_id) {
+            return collect();
         }
 
         try {
-            $result = DB::table('account_usage_logs')
+            $query = DB::table('account_usage_logs')
                 ->join('accounts', 'account_usage_logs.account_id', '=', 'accounts.id')
-                ->where('accounts.company_id', auth()->user()->company_id ?? 1)
-                ->whereYear('account_usage_logs.used_at', $this->selectedYear)
-                ->select(
-                    DB::raw('HOUR(account_usage_logs.used_at) as hour'),
-                    DB::raw('SUM(account_usage_logs.reports_used) as total_reports')
-                )
-                ->groupBy('hour')
-                ->orderBy('hour')
-                ->get();
+                ->where('accounts.company_id', auth()->user()->company_id)
+                ->where('account_usage_logs.action_type', 'report_generation')
+                ->whereYear('account_usage_logs.used_at', $this->selectedYear);
 
-            // If no data found, return sample data
-            if ($result->isEmpty()) {
-                return $this->getSampleHourlyData();
+            if ($this->selectedMonth) {
+                $query->whereMonth('account_usage_logs.used_at', $this->selectedMonth);
             }
 
-            return $result;
+            if ($this->selectedAccount) {
+                $query->where('accounts.id', $this->selectedAccount);
+            }
+
+            return $query->select(
+                DB::raw('HOUR(account_usage_logs.used_at) as hour'),
+                DB::raw('SUM(account_usage_logs.reports_used) as total_reports')
+            )
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get();
         } catch (\Exception $e) {
             \Log::error('Error getting hourly pattern: ' . $e->getMessage());
-            return $this->getSampleHourlyData();
+            return collect();
         }
     }
 
-    // Generate sample hourly data
-    private function getSampleHourlyData()
+    // Get detailed usage logs from account_usage_logs
+    private function getUsageLogs()
     {
-        return collect([
-            (object)['hour' => 8, 'total_reports' => 12],
-            (object)['hour' => 9, 'total_reports' => 25],
-            (object)['hour' => 10, 'total_reports' => 35],
-            (object)['hour' => 11, 'total_reports' => 42],
-            (object)['hour' => 12, 'total_reports' => 28],
-            (object)['hour' => 13, 'total_reports' => 18],
-            (object)['hour' => 14, 'total_reports' => 38],
-            (object)['hour' => 15, 'total_reports' => 45],
-            (object)['hour' => 16, 'total_reports' => 32],
-            (object)['hour' => 17, 'total_reports' => 22],
-            (object)['hour' => 18, 'total_reports' => 8],
-        ]);
-    }
-
-    // Get detailed usage logs with error handling
-    public function getUsageLogsProperty()
-    {
-        if (!$this->usageLogsTableExists()) {
-            return new \Illuminate\Pagination\LengthAwarePaginator(
-                [],
-                0,
-                $this->perPage,
-                1
-            );
+        if (!auth()->check() || !auth()->user()->company_id) {
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->perPage, 1);
         }
 
         try {
             $query = AccountUsageLog::with(['account' => function($q) {
-                $q->select('id', 'account_number', 'package_type');
+                $q->select('id', 'account_number', 'package_type', 'company_id');
             }])
             ->whereHas('account', function($q) {
-                $q->where('company_id', auth()->user()->company_id ?? 1);
+                $q->where('company_id', auth()->user()->company_id);
             })
+            ->where('action_type', 'report_generation')
             ->whereYear('used_at', $this->selectedYear);
 
             if ($this->selectedMonth) {
@@ -216,163 +203,198 @@ class UsageHistory extends Component
             return $query->latest('used_at')->paginate($this->perPage);
         } catch (\Exception $e) {
             \Log::error('Error getting usage logs: ' . $e->getMessage());
-            return new \Illuminate\Pagination\LengthAwarePaginator(
-                [],
-                0,
-                $this->perPage,
-                1
-            );
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->perPage, 1);
         }
     }
 
-    // Get available accounts for filter with sample data fallback
-    public function getAvailableAccountsProperty()
+    // Get available accounts from accounts table
+    private function getAvailableAccounts()
     {
+        if (!auth()->check() || !auth()->user()->company_id) {
+            return collect();
+        }
+
         try {
-            $query = Account::where('company_id', auth()->user()->company_id ?? 1)
-                ->select('id', 'account_number', 'package_type');
-
-            if ($this->usageLogsTableExists()) {
-                $query->whereHas('usageLogs', function($q) {
-                    $q->whereYear('used_at', $this->selectedYear);
-                });
-            }
-
-            $accounts = $query->get();
-
-            // If no real accounts, provide sample accounts for demo
-            if ($accounts->isEmpty()) {
-                return collect([
-                    (object)[
-                        'id' => 'sample_1',
-                        'account_number' => 'SAMPLE001',
-                        'package_type' => 'Business Pro'
-                    ],
-                    (object)[
-                        'id' => 'sample_2',
-                        'account_number' => 'SAMPLE002',
-                        'package_type' => 'Standard'
-                    ]
-                ]);
-            }
-
-            return $accounts;
+            return Account::where('company_id', auth()->user()->company_id)
+                ->whereHas('usageLogs', function($q) {
+                    $q->where('action_type', 'report_generation')
+                      ->whereYear('used_at', $this->selectedYear);
+                })
+                ->select('id', 'account_number', 'package_type')
+                ->orderBy('account_number')
+                ->get();
         } catch (\Exception $e) {
             \Log::error('Error getting available accounts: ' . $e->getMessage());
-            return collect([
-                (object)[
-                    'id' => 'sample_1',
-                    'account_number' => 'SAMPLE001',
-                    'package_type' => 'Business Pro'
-                ]
-            ]);
+            return collect();
         }
     }
 
-    // Get summary statistics with error handling and sample data fallback
-    public function getUsageSummaryProperty()
+    // Get comprehensive usage summary from real database tables
+    private function getUsageSummary()
     {
-        if (!$this->usageLogsTableExists()) {
-            return $this->getSampleUsageSummary();
+        if (!auth()->check() || !auth()->user()->company_id) {
+            return [
+                'total_reports_generated' => 0,
+                'total_reports_purchased' => 0,
+                'total_reports_remaining' => 0,
+                'utilization_rate' => 0,
+                'active_accounts' => 0,
+                'total_investment' => 0,
+                'unique_days' => 0,
+                'average_per_day' => 0,
+                'peak_day' => null,
+                'most_active_account' => null,
+                'total_unique_reports' => 0,
+            ];
         }
 
+        $companyId = auth()->user()->company_id;
+
         try {
-            $baseQuery = DB::table('account_usage_logs')
+            // Get usage data from account_usage_logs
+            $usageQuery = DB::table('account_usage_logs')
                 ->join('accounts', 'account_usage_logs.account_id', '=', 'accounts.id')
-                ->where('accounts.company_id', auth()->user()->company_id ?? 1)
+                ->where('accounts.company_id', $companyId)
+                ->where('account_usage_logs.action_type', 'report_generation')
                 ->whereYear('account_usage_logs.used_at', $this->selectedYear);
 
             if ($this->selectedAccount) {
-                $baseQuery->where('accounts.id', $this->selectedAccount);
+                $usageQuery->where('accounts.id', $this->selectedAccount);
             }
 
-            $totalReports = $baseQuery->sum('account_usage_logs.reports_used');
+            $totalReportsGenerated = $usageQuery->sum('account_usage_logs.reports_used');
+
+            // Get account statistics
+            $accountQuery = Account::where('company_id', $companyId);
             
-            // If no data, return sample data
-            if ($totalReports == 0) {
-                return $this->getSampleUsageSummary();
-            }
+            $totalReportsPurchased = $accountQuery->sum('total_reports');
+            $totalReportsRemaining = $accountQuery->where('status', 'active')->sum('remaining_reports');
+            $activeAccounts = $accountQuery->where('status', 'active')->count();
+            $totalInvestment = $accountQuery->sum('amount_paid');
 
-            $uniqueDays = $baseQuery->select(DB::raw('DATE(account_usage_logs.used_at)'))->distinct()->count();
-            $averagePerDay = $uniqueDays > 0 ? $totalReports / $uniqueDays : 0;
+            // Calculate utilization rate
+            $utilizationRate = $totalReportsPurchased > 0 
+                ? round((($totalReportsPurchased - $totalReportsRemaining) / $totalReportsPurchased) * 100, 1) 
+                : 0;
+
+            // Get unique days with activity
+            $uniqueDays = $usageQuery->select(DB::raw('DATE(account_usage_logs.used_at) as date'))
+                ->distinct()
+                ->count();
+
+            $averagePerDay = $uniqueDays > 0 ? round($totalReportsGenerated / $uniqueDays, 2) : 0;
 
             // Get peak usage day
-            $peakDay = $baseQuery
-                ->select(
-                    DB::raw('DATE(account_usage_logs.used_at) as date'),
-                    DB::raw('SUM(account_usage_logs.reports_used) as daily_total')
-                )
-                ->groupBy('date')
-                ->orderBy('daily_total', 'desc')
-                ->first();
+            $peakDay = $usageQuery->select(
+                DB::raw('DATE(account_usage_logs.used_at) as date'),
+                DB::raw('SUM(account_usage_logs.reports_used) as daily_total')
+            )
+            ->groupBy('date')
+            ->orderBy('daily_total', 'desc')
+            ->first();
 
-            // Get most active package
-            $mostActivePackage = $baseQuery
-                ->select(
-                    'accounts.package_type',
-                    'accounts.account_number',
-                    DB::raw('SUM(account_usage_logs.reports_used) as total_used')
-                )
-                ->groupBy('accounts.id', 'accounts.package_type', 'accounts.account_number')
-                ->orderBy('total_used', 'desc')
-                ->first();
+            // Get most active account
+            $mostActiveAccount = $usageQuery->select(
+                'accounts.account_number',
+                'accounts.package_type',
+                DB::raw('SUM(account_usage_logs.reports_used) as total_used')
+            )
+            ->groupBy('accounts.id', 'accounts.account_number', 'accounts.package_type')
+            ->orderBy('total_used', 'desc')
+            ->first();
+
+            // Get unique credit reports from report_logs
+            $totalUniqueReports = DB::table('report_logs')
+                ->join('users', 'report_logs.user_id', '=', 'users.id')
+                ->where('users.company_id', $companyId)
+                ->whereYear('report_logs.retrieved_at', $this->selectedYear)
+                ->distinct('report_logs.creditinfo_id')
+                ->count('report_logs.creditinfo_id');
 
             return [
-                'total_reports' => $totalReports,
+                'total_reports_generated' => $totalReportsGenerated,
+                'total_reports_purchased' => $totalReportsPurchased,
+                'total_reports_remaining' => $totalReportsRemaining,
+                'utilization_rate' => $utilizationRate,
+                'active_accounts' => $activeAccounts,
+                'total_investment' => $totalInvestment,
                 'unique_days' => $uniqueDays,
-                'average_per_day' => round($averagePerDay, 2),
+                'average_per_day' => $averagePerDay,
                 'peak_day' => $peakDay,
-                'most_active_package' => $mostActivePackage,
+                'most_active_account' => $mostActiveAccount,
+                'total_unique_reports' => $totalUniqueReports,
             ];
         } catch (\Exception $e) {
             \Log::error('Error getting usage summary: ' . $e->getMessage());
-            return $this->getSampleUsageSummary();
+            return [
+                'total_reports_generated' => 0,
+                'total_reports_purchased' => 0,
+                'total_reports_remaining' => 0,
+                'utilization_rate' => 0,
+                'active_accounts' => 0,
+                'total_investment' => 0,
+                'unique_days' => 0,
+                'average_per_day' => 0,
+                'peak_day' => null,
+                'most_active_account' => null,
+                'total_unique_reports' => 0,
+            ];
         }
-    }
-
-    // Generate sample usage summary
-    private function getSampleUsageSummary()
-    {
-        return [
-            'total_reports' => 624,
-            'unique_days' => 45,
-            'average_per_day' => 13.87,
-            'peak_day' => (object)[
-                'date' => Carbon::now()->subDays(15)->toDateString(),
-                'daily_total' => 45
-            ],
-            'most_active_package' => (object)[
-                'package_type' => 'Business Pro',
-                'account_number' => 'SAMPLE001',
-                'total_used' => 420
-            ],
-        ];
     }
 
     public function setDateRange($range)
     {
         $this->dateRange = $range;
-        // Emit event to update charts after next render
         $this->dispatch('chartUpdated');
     }
 
     public function setChartType($type)
     {
         $this->chartType = $type;
-        // Emit event to update charts after next render
         $this->dispatch('chartUpdated');
     }
 
-    public function updated($propertyName)
+    public function refreshData()
     {
-        if (in_array($propertyName, ['selectedYear', 'selectedMonth', 'selectedAccount'])) {
-            $this->resetPage();
-            $this->dispatch('chartUpdated');
-        }
+        $this->resetPage();
+        $this->dispatch('chartUpdated');
+    }
+
+    // Computed properties for Livewire
+    public function getChartDataProperty()
+    {
+        return $this->getChartData();
+    }
+
+    public function getHourlyPatternProperty()
+    {
+        return $this->getHourlyPattern();
+    }
+
+    public function getUsageLogsProperty()
+    {
+        return $this->getUsageLogs();
+    }
+
+    public function getAvailableAccountsProperty()
+    {
+        return $this->getAvailableAccounts();
+    }
+
+    public function getUsageSummaryProperty()
+    {
+        return $this->getUsageSummary();
     }
 
     public function render()
     {
-        return view('livewire.my-packages.usage-history');
+        return view('livewire.my-packages.usage-history', [
+            'chartData' => $this->chartData,
+            'hourlyPattern' => $this->hourlyPattern,
+            'usageLogs' => $this->usageLogs,
+            'availableAccounts' => $this->availableAccounts,
+            'usageSummary' => $this->usageSummary,
+            'hasRealData' => $this->usageLogs->count() > 0 || $this->chartData->sum('total_reports') > 0,
+        ]);
     }
 }

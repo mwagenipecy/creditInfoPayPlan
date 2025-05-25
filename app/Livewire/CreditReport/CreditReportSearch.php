@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\ReportLog;
 
+use App\Models\Account;
+use App\Models\AccountUsageLog;
+use Illuminate\Support\Facades\DB;
+
+
 class CreditReportSearch extends Component
 {
     public $fullName = '';
@@ -26,11 +31,9 @@ class CreditReportSearch extends Component
     public $reportData = null;
     public $reportError = '';
     public $reportUrl = null;
-    
     protected $rules = [
         'fullName' => 'required_without_all:idNumber,phoneNumber',
     ];
-    
     public function search()
     {
         $this->validate();
@@ -53,7 +56,6 @@ class CreditReportSearch extends Component
         
         $this->isSearching = false;
     }
-    
     private function searchIndividual()
     {
         $client = new Client();
@@ -177,8 +179,7 @@ class CreditReportSearch extends Component
             $errorMessage = $this->formatUserFriendlyErrorMessage($e);
             throw new \Exception($errorMessage);
         }
-    }
-    
+    }    
     /**
      * Create a user-friendly error message from exception
      */
@@ -213,8 +214,6 @@ class CreditReportSearch extends Component
         return 'Credit search failed: ' . $message;
     }
 
-
-    
     private function parseSearchResponse($xml)
     {
         $xml = preg_replace('/(<\/?)(\w+):([^>]*>)/', '$1$3', $xml);
@@ -235,7 +234,6 @@ class CreditReportSearch extends Component
         
         return $records;
     }
-    
     public function getReport($creditinfoId)
     {
         Log::info("Starting credit report retrieval for ID: {$creditinfoId}");
@@ -565,8 +563,6 @@ class CreditReportSearch extends Component
             ]);
         }
     }
-    
-    
     /**
      * Generate a more user-friendly error message
      */
@@ -602,7 +598,6 @@ class CreditReportSearch extends Component
         // Default message for unknown errors
         return 'Failed to retrieve report: ' . $message;
     }
-    
     /**
      * Helper function to generate a random string
      */
@@ -615,9 +610,7 @@ class CreditReportSearch extends Component
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
         return $randomString;
-    }
-
-    
+    }    
     private function fetchPdfReport($creditinfoId)
     {
         $client = new Client();
@@ -653,9 +646,6 @@ class CreditReportSearch extends Component
         return $this->parsePdfResponse($responseBody);
     }
 
-
-
-    
     private function parsePdfResponse($xml)
     {
         $xml = preg_replace('/(<\/?)(\w+):([^>]*>)/', '$1$3', $xml);
@@ -670,28 +660,291 @@ class CreditReportSearch extends Component
         return $array['Body']['GetPdfReportResponse']['GetPdfReportResult'];
     }
     
+    // private function logReportRetrieval($creditinfoId)
+    // {
+    //     // Assuming we have authentication
+    //     if (auth()->check()) {
+    //         ReportLog::create([
+    //             'user_id' => auth()->id(),
+    //             'creditinfo_id' => $creditinfoId,
+    //             'retrieved_at' => now(),
+    //         ]);
+    //     }
+    // }
+    
+    // public function render()
+    // {
+    //     $reportCount = 0;
+    //     if (auth()->check()) {
+    //         $reportCount = ReportLog::where('user_id', auth()->id())->count();
+    //     }
+        
+    //     return view('livewire.credit-report.credit-report-search', [
+    //         'reportCount' => $reportCount
+    //     ]);
+    // }
+
+
+
+
     private function logReportRetrieval($creditinfoId)
-    {
-        // Assuming we have authentication
-        if (auth()->check()) {
-            ReportLog::create([
-                'user_id' => auth()->id(),
+{
+    // Ensure user is authenticated and has a company
+    if (!auth()->check() || !auth()->user()->company_id) {
+        Log::warning('Report retrieval attempted without proper authentication or company', [
+            'user_id' => auth()->id(),
+            'creditinfo_id' => $creditinfoId,
+        ]);
+        return;
+    }
+
+    $userId = auth()->id();
+    $companyId = auth()->user()->company_id;
+
+    try {
+        DB::beginTransaction();
+
+        // Check if this creditinfo_id has been retrieved by this company before
+        $existingReport = ReportLog::whereHas('user', function($query) use ($companyId) {
+            $query->where('company_id', $companyId);
+        })
+        ->where('creditinfo_id', $creditinfoId)
+        ->first();
+
+        $shouldCountUsage = !$existingReport; // Only count if it's a new credit report for this company
+
+        Log::info('Report retrieval check', [
+            'creditinfo_id' => $creditinfoId,
+            'company_id' => $companyId,
+            'user_id' => $userId,
+            'existing_report_found' => (bool)$existingReport,
+            'should_count_usage' => $shouldCountUsage,
+        ]);
+
+        // Always log the report retrieval (for audit purposes)
+        $reportLog = ReportLog::create([
+            'user_id' => $userId,
+            'creditinfo_id' => $creditinfoId,
+            'retrieved_at' => now(),
+        ]);
+
+        Log::info('Report log created', [
+            'report_log_id' => $reportLog->id,
+            'creditinfo_id' => $creditinfoId,
+            'user_id' => $userId,
+        ]);
+
+        // Only deduct usage if this is a new credit report for the company
+        if ($shouldCountUsage) {
+            $this->processUsageDeduction($companyId, $creditinfoId);
+        } else {
+            Log::info('Usage not deducted - credit report already retrieved by company', [
                 'creditinfo_id' => $creditinfoId,
-                'retrieved_at' => now(),
+                'company_id' => $companyId,
+                'existing_report_id' => $existingReport->id,
             ]);
         }
-    }
-    
-    public function render()
-    {
-        $reportCount = 0;
-        if (auth()->check()) {
-            $reportCount = ReportLog::where('user_id', auth()->id())->count();
-        }
+
+        DB::commit();
+
+    } catch (\Exception $e) {
+        DB::rollBack();
         
-        return view('livewire.credit-report.credit-report-search', [
-            'reportCount' => $reportCount
+        Log::error('Error in report retrieval logging', [
+            'creditinfo_id' => $creditinfoId,
+            'user_id' => $userId,
+            'company_id' => $companyId,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        
+        // Just log the error
+    }
+}
+
+private function processUsageDeduction($companyId, $creditinfoId)
+{
+    // Get the oldest active account for this company with remaining reports
+    $account = Account::where('company_id', $companyId)
+        ->where('status', 'active')
+        ->where('remaining_reports', '>', 0)
+        ->where('valid_until', '>', now())
+        ->orderBy('created_at', 'asc') // Oldest first
+        ->first();
+
+    if (!$account) {
+        Log::warning('No active account with remaining reports found for company', [
+            'company_id' => $companyId,
+            'creditinfo_id' => $creditinfoId,
+        ]);
+        
+        // Check if there are any accounts that might need status updates
+        $this->checkAndUpdateExpiredAccounts($companyId);
+        return;
+    }
+
+    Log::info('Found account for usage deduction', [
+        'account_id' => $account->id,
+        'account_number' => $account->account_number,
+        'remaining_reports' => $account->remaining_reports,
+        'company_id' => $companyId,
+    ]);
+
+    // Deduct one report from the account
+    $newRemainingReports = $account->remaining_reports - 1;
+    
+    // Update the account
+    $account->update([
+        'remaining_reports' => $newRemainingReports,
+        'last_used' => now(),
+    ]);
+
+    // Log the usage
+    AccountUsageLog::create([
+        'account_id' => $account->id,
+        'reports_used' => 1,
+        'remaining_reports' => $newRemainingReports,
+        'action_type' => 'report_generation',
+        'metadata' => json_encode([
+            'creditinfo_id' => $creditinfoId,
+            'user_id' => auth()->id(),
+            'report_type' => 'credit_report',
+            'deduction_reason' => 'new_credit_report_for_company',
+        ]),
+        'used_at' => now(),
+    ]);
+
+    Log::info('Usage deducted and logged', [
+        'account_id' => $account->id,
+        'account_number' => $account->account_number,
+        'reports_used' => 1,
+        'remaining_reports' => $newRemainingReports,
+        'creditinfo_id' => $creditinfoId,
+    ]);
+
+    // Check if account should be closed due to zero remaining reports
+    if ($newRemainingReports <= 0) {
+        $this->closeAccountDueToUsage($account);
+    }
+
+    // Also check for any expired accounts that need status updates
+    $this->checkAndUpdateExpiredAccounts($companyId);
+}
+
+private function closeAccountDueToUsage(Account $account)
+{
+    $account->update([
+        'status' => 'expired',
+    ]);
+
+    Log::info('Account closed due to zero remaining reports', [
+        'account_id' => $account->id,
+        'account_number' => $account->account_number,
+        'company_id' => $account->company_id,
+        'closure_reason' => 'zero_remaining_reports',
+    ]);
+
+    // Log the account closure
+    AccountUsageLog::create([
+        'account_id' => $account->id,
+        'reports_used' => 0,
+        'remaining_reports' => 0,
+        'action_type' => 'account_closure',
+        'metadata' => json_encode([
+            'closure_reason' => 'zero_remaining_reports',
+            'closed_at' => now()->toDateTimeString(),
+            'closed_by_system' => true,
+        ]),
+        'used_at' => now(),
+    ]);
+}
+
+private function checkAndUpdateExpiredAccounts($companyId)
+{
+    // Find accounts that have passed their valid_until date but are still active
+    $expiredAccounts = Account::where('company_id', $companyId)
+        ->where('status', 'active')
+        ->where('valid_until', '<=', now())
+        ->get();
+
+    foreach ($expiredAccounts as $account) {
+        $account->update([
+            'status' => 'expired',
+        ]);
+
+        Log::info('Account closed due to expiration date', [
+            'account_id' => $account->id,
+            'account_number' => $account->account_number,
+            'company_id' => $account->company_id,
+            'valid_until' => $account->valid_until,
+            'closure_reason' => 'expiration_date_reached',
+        ]);
+
+        // Log the account closure
+        AccountUsageLog::create([
+            'account_id' => $account->id,
+            'reports_used' => 0,
+            'remaining_reports' => $account->remaining_reports,
+            'action_type' => 'account_closure',
+            'metadata' => json_encode([
+                'closure_reason' => 'expiration_date_reached',
+                'valid_until' => $account->valid_until->toDateTimeString(),
+                'closed_at' => now()->toDateTimeString(),
+                'closed_by_system' => true,
+            ]),
+            'used_at' => now(),
         ]);
     }
+
+    if ($expiredAccounts->count() > 0) {
+        Log::info('Expired accounts updated', [
+            'company_id' => $companyId,
+            'accounts_closed' => $expiredAccounts->count(),
+        ]);
+    }
+}
+
+// Update the render method to show company-level report count
+public function render()
+{
+    $reportCount = 0;
+    $remainingReports = 0;
+    $activeAccounts = collect();
+    
+    if (auth()->check() && auth()->user()->company_id) {
+        $companyId = auth()->user()->company_id;
+        
+        // Get total reports retrieved by this company (unique creditinfo_ids)
+        $reportCount = ReportLog::whereHas('user', function($query) use ($companyId) {
+            $query->where('company_id', $companyId);
+        })
+        ->distinct('creditinfo_id')
+        ->count('creditinfo_id');
+
+        // Get active accounts for this company
+        $activeAccounts = Account::where('company_id', $companyId)
+            ->where('status', 'active')
+            ->where('valid_until', '>', now())
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Calculate total remaining reports
+        $remainingReports = $activeAccounts->sum('remaining_reports');
+
+        // Check and update any expired accounts
+        $this->checkAndUpdateExpiredAccounts($companyId);
+    }
+    
+    return view('livewire.credit-report.credit-report-search', [
+        'reportCount' => $reportCount,
+        'remainingReports' => $remainingReports,
+        'activeAccounts' => $activeAccounts,
+    ]);
+}
+
+
+
+
+
 }
 
