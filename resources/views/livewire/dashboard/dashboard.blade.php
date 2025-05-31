@@ -1,9 +1,29 @@
 <div>
     <!-- Page Header -->
+    <div class="flex justify-between">
+
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Welcome Back, {{ auth()->user()->name }}!</h2>
         <p class="text-sm text-gray-600 mt-1">Here's what's happening with your system today.</p>
     </div>
+
+
+
+
+<label class="inline-flex items-center cursor-pointer">
+  <input wire:click="changeView" type="checkbox" value="" class="sr-only peer">
+  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600 dark:peer-checked:bg-red-600"></div>
+  <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"> Change View  </span>
+</label>
+
+
+
+    
+    </div>
+
+
+
+    @if($tab_id==1)
     
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
@@ -198,4 +218,18 @@
             </div>
         </div>
     </div>
+
+    @else
+
+
+
+
+    <livewire:admin.dashboard />
+
+
+    @endif 
+
+
+
+
 </div>

@@ -54,7 +54,7 @@ class Dashboard extends Component
         $this->activeTab = 'all_users';
         
         // If user is company admin, set company filter
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name=='company_admin') {
             $this->filters['company'] = auth()->user()->company_id;
         }
         
@@ -77,7 +77,7 @@ class Dashboard extends Component
     public function resetFilters()
     {
         $this->filters = [
-            'company' => auth()->user()->hasRole('company_admin') ? auth()->user()->company_id : '',
+            'company' => auth()->user()->role->name=='company_admin' ? auth()->user()->company_id : '',
             'role' => '',
             'status' => '',
             'verified' => '',
@@ -114,7 +114,7 @@ class Dashboard extends Component
         // Query builder for user stats - respect company admin restrictions
         $userQuery = User::query();
         
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name=='company_admin') {
             $userQuery->where('company_id', auth()->user()->company_id);
         }
         
@@ -156,7 +156,7 @@ class Dashboard extends Component
             ->count();
         
         // Blocked companies - only for super admin
-        if (auth()->user()->hasRole('super_admin')) {
+        if (auth()->user()->role->name=='super_admin') {
             $this->blockedCompanies = Company::where('is_blocked', true)->count();
         } else {
             $this->blockedCompanies = 0;
@@ -169,10 +169,10 @@ class Dashboard extends Component
         $companies = [];
         $roles = [];
         
-        if (auth()->user()->hasRole('super_admin')) {
+        if (auth()->user()->role->name=='super_admin') {
             $companies = Company::orderBy('company_name')->get();
             $roles = Role::orderBy('display_name')->get();
-        } else if (auth()->user()->hasRole('company_admin')) {
+        } else if (auth()->user()->role->name=='company_admin') {
             $companies = Company::where('id', auth()->user()->company_id)->get();
             $roles = Role::where('name', '!=', 'super_admin')
                 ->orderBy('display_name')

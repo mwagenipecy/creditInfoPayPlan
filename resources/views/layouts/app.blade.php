@@ -181,23 +181,28 @@
 
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 h-screen overflow-hidden">
 
 <!-- Dark Overlay (Mobile Only) -->
 <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
 
 <!-- Layout Wrapper -->
-<div class="min-h-screen flex overflow-hidden">
+<div class="h-screen flex">
 
-  <!-- Sidebar -->
- <livewire:side-bar />
+  <!-- Sidebar with independent scrolling -->
+  <div class="sidebar-container flex-shrink-0">
+    <livewire:side-bar />
+  </div>
 
   <!-- Main content -->
-  <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+  <div class="flex-1 flex flex-col min-w-0 h-screen">
 
-   <livewire:header/>
+    <!-- Header (fixed at top) -->
+    <div class="flex-shrink-0">
+      <livewire:header/>
+    </div>
 
-    <!-- Page Content Area -->
+    <!-- Page Content Area (scrollable) -->
     <main class="flex-1 p-6 lg:p-8 bg-gray-50 overflow-y-auto">
 
      @yield('main-section')

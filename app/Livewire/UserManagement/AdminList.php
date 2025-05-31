@@ -71,6 +71,36 @@ class AdminList extends Component
         }
     }
     
+
+    public function editUser($userId){
+        $this->dispatch('editUser',$userId);
+    }
+
+
+    public function blockCompanyAdmin($userId)
+    {
+        $this->dispatch('blockCompanyAdmin', $userId);
+    }
+
+
+
+    public function blockUser($userId)
+    {
+
+        $this->dispatch('blockUser', $userId);
+    }
+    
+    public function unblockUser($userId)
+    {
+        $this->dispatch('unblockUser', $userId);
+    }
+
+
+    
+
+
+
+
     public function resetFilters()
     {
         $this->filters = [

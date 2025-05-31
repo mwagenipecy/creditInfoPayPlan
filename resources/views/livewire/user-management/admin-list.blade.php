@@ -165,14 +165,14 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end space-x-2">
                             @if(auth()->user()->hasRole('super_admin'))
-                            <button wire:click="$dispatch('editUser', { id: {{ $admin->id }} })" class="text-indigo-600 hover:text-indigo-900 transition bg-indigo-50 hover:bg-indigo-100 p-2 rounded" title="Edit Admin">
+                            <button wire:click="editUser({{ $admin->id }})" class="text-indigo-600 hover:text-indigo-900 transition bg-indigo-50 hover:bg-indigo-100 p-2 rounded" title="Edit Admin">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
                             
                             @if($admin->role->name === 'company_admin' && $admin->status !== 'inactive')
-                            <button wire:click="$dispatch('blockCompanyAdmin', { id: {{ $admin->id }} })" class="text-orange-600 hover:text-orange-900 transition bg-orange-50 hover:bg-orange-100 p-2 rounded" title="Block Admin & Company">
+                            <button wire:click="blockCompanyAdmin({{ $admin->id }})" class="text-orange-600 hover:text-orange-900 transition bg-orange-50 hover:bg-orange-100 p-2 rounded" title="Block Admin & Company">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                 </svg>
@@ -180,13 +180,13 @@
                             @endif
                             
                             @if($admin->status === 'inactive')
-                            <button wire:click="$dispatch('unblockUser', { id: {{ $admin->id }} })" class="text-green-600 hover:text-green-900 transition bg-green-50 hover:bg-green-100 p-2 rounded" title="Unblock Admin">
+                            <button wire:click="unblockUser( {{ $admin->id }} )" class="text-green-600 hover:text-green-900 transition bg-green-50 hover:bg-green-100 p-2 rounded" title="Unblock Admin">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </button>
                             @elseif($admin->role->name !== 'super_admin')
-                            <button wire:click="$dispatch('blockUser', { id: {{ $admin->id }} })" class="text-red-600 hover:text-red-900 transition bg-red-50 hover:bg-red-100 p-2 rounded" title="Block Admin">
+                            <button wire:click="blockUser({{  $admin->id }})" class="text-red-600 hover:text-red-900 transition bg-red-50 hover:bg-red-100 p-2 rounded" title="Block Admin">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                 </svg>

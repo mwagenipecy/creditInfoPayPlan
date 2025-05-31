@@ -22,6 +22,8 @@ class Dashboard extends Component
     public $paymentStats = [];
     public $systemStatus = [];
 
+    public $tab_id=2;
+
     public function mount()
     {
         $this->calculateStats();
@@ -29,6 +31,12 @@ class Dashboard extends Component
         $this->getMonthlyReports();
         $this->getPaymentStats();
         $this->getSystemStatus();
+    }
+
+
+    public function changeView(){
+
+        $this->tab_id=$this->tab_id==1 ? $this->tab_id=2 : $this->tab_id=1;
     }
 
     private function calculateStats()

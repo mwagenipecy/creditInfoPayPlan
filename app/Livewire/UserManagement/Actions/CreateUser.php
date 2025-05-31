@@ -10,7 +10,9 @@ use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
-use App\Mail\UserCreated;
+use Illuminate\Support\Str;
+use App\Mail\UserCreatedNotification;
+use App\Mail\WelcomeUserNotification;
 
 class CreateUser extends Component
 {
@@ -22,30 +24,65 @@ class CreateUser extends Component
     public $email;
     public $company_id;
     public $role_id;
-    public $password;
-    public $password_confirmation;
     public $send_welcome_email = true;
+    public $send_credentials_email = true;
     public $status = 'active';
+    public $notify_admins = false;
+    
+    // Generated password (not visible to user)
+    private $generatedPassword;
     
     // Listeners
-    protected $listeners = ['openModal'];
+    protected $listeners = ['openModalCreateUser'];
     
-    // Validation rules
+    /**
+     * Validation rules
+     */
     protected function rules()
     {
-        return [
+        $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'company_id' => 'required|exists:companies,id',
             'role_id' => 'required|exists:roles,id',
-            'password' => 'required|min:8|same:password_confirmation',
             'status' => 'required|in:active,inactive,pending',
+            'send_welcome_email' => 'boolean',
+            'send_credentials_email' => 'boolean',
+            'notify_admins' => 'boolean',
         ];
+
+        // Company is required for super admin, auto-set for company admin
+        if (auth()->user()->hasRole('super_admin')) {
+            $rules['company_id'] = 'required|exists:companies,id';
+        }
+
+        return $rules;
     }
+
+    /**
+     * Custom validation messages
+     */
+    protected $messages = [
+        'first_name.required' => 'First name is required.',
+        'last_name.required' => 'Last name is required.',
+        'email.required' => 'Email address is required.',
+        'email.email' => 'Please enter a valid email address.',
+        'email.unique' => 'This email address is already registered.',
+        'company_id.required' => 'Please select a company.',
+        'role_id.required' => 'Please select a role.',
+    ];
     
-    public function openModal()
+    /**
+     * Open create user modal
+     */
+    public function openModalCreateUser()
     {
+        // Check permissions
+        if (!$this->canCreateUser()) {
+            $this->dispatch('notify', type: 'error', message: 'You do not have permission to create users.');
+            return;
+        }
+
         // Reset form
         $this->resetForm();
         
@@ -53,137 +90,280 @@ class CreateUser extends Component
         if (auth()->user()->hasRole('company_admin')) {
             $this->company_id = auth()->user()->company_id;
         }
+
+        // Set default notification preferences
+        $this->notify_admins = !auth()->user()->hasRole('super_admin');
         
         $this->showModal = true;
     }
+
+    /**
+     * Check if current user can create users
+     */
+    private function canCreateUser()
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('company_admin');
+    }
     
+    /**
+     * Close modal and reset form
+     */
     public function closeModal()
     {
         $this->showModal = false;
         $this->resetForm();
     }
     
+    /**
+     * Reset form data
+     */
     public function resetForm()
     {
-        $this->first_name = '';
-        $this->last_name = '';
-        $this->email = '';
+        $this->reset([
+            'first_name', 'last_name', 'email', 'role_id', 
+            'send_welcome_email', 'send_credentials_email', 'notify_admins'
+        ]);
+        
         $this->company_id = auth()->user()->hasRole('company_admin') ? auth()->user()->company_id : '';
-        $this->role_id = '';
-        $this->password = '';
-        $this->password_confirmation = '';
-        $this->send_welcome_email = true;
         $this->status = 'active';
+        $this->send_welcome_email = true;
+        $this->send_credentials_email = true;
+        $this->notify_admins = !auth()->user()->hasRole('super_admin');
+        $this->generatedPassword = null;
         
         $this->resetErrorBag();
         $this->resetValidation();
     }
+
+    /**
+     * Generate a secure password
+     */
+    private function generateSecurePassword($length = 12)
+    {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+        $password = '';
+        
+        // Ensure at least one character from each type
+        $password .= chr(rand(97, 122)); // lowercase
+        $password .= chr(rand(65, 90));  // uppercase
+        $password .= chr(rand(48, 57));  // number
+        $password .= '!@#$%^&*'[rand(0, 7)]; // special character
+        
+        // Fill the rest randomly
+        for ($i = 4; $i < $length; $i++) {
+            $password .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        
+        // Shuffle the password to randomize character positions
+        return str_shuffle($password);
+    }
     
+    /**
+     * Create new user
+     */
     public function createUser()
     {
         $this->validate();
         
-        // Security checks
-        if (auth()->user()->hasRole('company_admin')) {
-            // Ensure company admin can only create users in their company
-            if ($this->company_id != auth()->user()->company_id) {
-                $this->addError('company_id', 'You can only create users in your own company.');
-                return;
-            }
-            
-            // Ensure company admin can't create super admins or other company admins
-            $role = Role::find($this->role_id);
-            if ($role && ($role->name === 'super_admin' || $role->name === 'company_admin')) {
-                $this->addError('role_id', 'You do not have permission to assign this role.');
-                return;
-            }
+        // Additional security checks
+        if (!$this->performSecurityChecks()) {
+            return;
         }
         
         try {
             DB::beginTransaction();
             
+            // Generate secure password
+            $this->generatedPassword = $this->generateSecurePassword();
+            
+            // Create user
             $user = User::create([
                 'first_name' => $this->first_name,
                 'last_name' => $this->last_name,
                 'name' => $this->first_name . ' ' . $this->last_name,
                 'email' => $this->email,
-                'password' => Hash::make($this->password),
+                'password' => Hash::make($this->generatedPassword),
                 'company_id' => $this->company_id,
                 'role_id' => $this->role_id,
                 'status' => $this->status,
+                'email_verified_at' => null, // Users need to verify their email
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
             ]);
             
             // Log activity
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'action' => 'created',
-                'model_type' => User::class,
-                'model_id' => $user->id,
-                'description' => "Created user: {$user->name}"
-            ]);
+            $this->logUserCreation($user);
             
-            // Send welcome email if checked
-            if ($this->send_welcome_email) {
-                // Generate password reset token
-                $token = app('auth.password.broker')->createToken($user);
-                
-                Mail::to($user->email)->send(new UserCreated($user, $token));
-            }
+            // Send notifications
+            $this->sendNotifications($user);
             
             DB::commit();
             
             // Close modal and show success message
             $this->closeModal();
             
-            // Emit event to refresh user list
-            $this->emit('userCreated');
-            
-            // Show notification
-            $this->dispatchBrowserEvent('notify', [
-                'type' => 'success',
-                'message' => 'User created successfully!'
-            ]);
+            // Emit events
+            $this->dispatch('userCreated');
+            $this->dispatch('notify', type: 'success', message: 'User created successfully! Login credentials have been sent via email.');
             
         } catch (\Exception $e) {
+
+            dd($e->getMessage());
             DB::rollBack();
             
-            $this->dispatchBrowserEvent('notify', [
-                'type' => 'error',
-                'message' => 'Error: ' . $e->getMessage()
-            ]);
+            $this->dispatch('notify', type: 'error', message: 'Error creating user: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Perform security checks
+     */
+    private function performSecurityChecks()
+    {
+        if (auth()->user()->hasRole('company_admin')) {
+            // Ensure company admin can only create users in their company
+            if ($this->company_id != auth()->user()->company_id) {
+                $this->addError('company_id', 'You can only create users in your own company.');
+                return false;
+            }
+            
+            // Ensure company admin can't create super admins or other company admins
+            $role = Role::find($this->role_id);
+            if ($role && in_array($role->name, ['super_admin', 'company_admin'])) {
+                $this->addError('role_id', 'You do not have permission to assign this role.');
+                return false;
+            }
+        }
+
+        // Check if company is active
+        $company = Company::find($this->company_id);
+        // if ($company && $company->status !== 'active') {
+        //     $this->addError('company_id', 'Cannot create users for inactive companies.');
+        //     return false;
+        // }
+
+        return true;
+    }
+
+    /**
+     * Log user creation activity
+     */
+    private function logUserCreation($user)
+    {
+        $company = Company::find($this->company_id);
+        $role = Role::find($this->role_id);
+        
+        $description = "Created new user: {$user->name} ({$user->email}) ";
+        $description .= "for company: {$company->company_name} ";
+        $description .= "with role: {$role->display_name} ";
+        $description .= "by " . auth()->user()->name;
+        
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'subject_type' => User::class,
+            'subject_id' => $user->id,
+            'activity' => 'user_created',
+            'description' => $description,
+            'old_values' => null,
+            'new_values' => json_encode($user->toArray()),
+            'changes' => json_encode([
+                'user_created' => [
+                    'from' => null,
+                    'to' => 'New user account created'
+                ],
+                'initial_status' => [
+                    'from' => null,
+                    'to' => $this->status
+                ]
+            ]),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'company_id' => auth()->user()->company_id,
+        ]);
+    }
+
+    /**
+     * Send notifications
+     */
+    private function sendNotifications($user)
+    {
+        try {
+            // Send welcome email if requested
+            if ($this->send_welcome_email) {
+                Mail::to($user->email)->send(
+                    new WelcomeUserNotification($user, auth()->user())
+                );
+            }
+
+            // Send credentials email if requested
+            if ($this->send_credentials_email) {
+                Mail::to($user->email)->send(
+                    new UserCreatedNotification($user, $this->generatedPassword, auth()->user())
+                );
+            }
+
+            // Notify admins if requested
+            if ($this->notify_admins) {
+                $admins = User::whereHas('role', function($query) {
+                    $query->where('name', 'super_admin');
+                })->where('status', 'active')->get();
+
+                foreach ($admins as $admin) {
+                    Mail::to($admin->email)->send(
+                        new UserCreatedNotification($user, null, auth()->user(), true)
+                    );
+                }
+            }
+
+        } catch (\Exception $e) {
+            // Log email error but don't fail user creation
+            \Log::error('Failed to send user creation notifications: ' . $e->getMessage());
         }
     }
     
-    public function render()
+    /**
+     * Get companies based on user role
+     */
+    public function getCompaniesProperty()
     {
-        $companies = [];
-        $roles = [];
-        
-        // Get companies based on user role
         if (auth()->user()->hasRole('super_admin')) {
-            $companies = Company::where('is_blocked', false)
-                ->orderBy('company_name')
+            return Company::
+                orderBy('company_name')
                 ->get();
         } elseif (auth()->user()->hasRole('company_admin')) {
-            $companies = Company::where('id', auth()->user()->company_id)
-                ->where('is_blocked', false)
+            return Company::where('id', auth()->user()->company_id)
+                ->where('status', 'active')
                 ->get();
         }
-        
-        // Get roles based on user role
+
+        return collect();
+    }
+
+    /**
+     * Get roles based on user role
+     */
+    public function getRolesProperty()
+    {
         if (auth()->user()->hasRole('super_admin')) {
-            $roles = Role::orderBy('display_name')->get();
+            return Role::orderBy('display_name')->get();
         } elseif (auth()->user()->hasRole('company_admin')) {
             // Company admins can only assign non-admin roles
-            $roles = Role::where('name', '!=', 'super_admin')
-                ->where('name', '!=', 'company_admin')
+            return Role::whereNotIn('name', ['super_admin', 'company_admin'])
                 ->orderBy('display_name')
                 ->get();
         }
-        
+
+        return collect();
+    }
+    
+    /**
+     * Render component
+     */
+    public function render()
+    {
         return view('livewire.user-management.actions.create-user', [
-            'companies' => $companies,
-            'roles' => $roles,
+            'companies' => $this->companies,
+            'roles' => $this->roles,
         ]);
     }
 }

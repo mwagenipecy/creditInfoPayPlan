@@ -42,25 +42,14 @@ class Account extends Model
     ];
 
     // Relationships
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+
 
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
 
-    public function payment()
-    {
-        return $this->belongsTo(Payment::class);
-    }
-
-    public function usageLogs()
-    {
-        return $this->hasMany(AccountUsageLog::class);
-    }
+  
 
     // Scopes
     public function scopeActive($query)
@@ -239,5 +228,47 @@ class Account extends Model
 
         return $expired->count();
     }
+
+
+
+
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function usageLogs()
+    {
+        return $this->hasMany(AccountUsageLog::class);
+    }
+
+    // Scope for active accounts
+  
+
+    // Check if account is valid
+    public function isValid(): bool
+    {
+        return $this->status === 'active' && 
+               $this->valid_until >= now() && 
+               $this->remaining_reports > 0;
+    }
+
+    // Get usage percentage
+    public function getUsagePercentage(): float
+    {
+        if ($this->total_reports == 0) return 0;
+        
+        $used = $this->total_reports - $this->remaining_reports;
+        return round(($used / $this->total_reports) * 100, 2);
+    }
+
+
     
 }

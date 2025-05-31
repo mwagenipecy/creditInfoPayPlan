@@ -35,6 +35,13 @@ class BlockedUserList extends Component
             'filtersReset' => 'resetFilters',
         ];
     }
+
+
+
+    public function unblockUser($userId)
+    {
+        $this->dispatch('unblockUser', $userId);
+    }
     
     public function mount()
     {
@@ -136,11 +143,7 @@ class BlockedUserList extends Component
     }
     
     // Unblock user
-    public function unblockUser($userId)
-    {
-        // Dispatch to UnblockUser component
-        $this->dispatch('unblockUser', id: $userId);
-    }
+   
     
     // Unblock selected users
     public function unblockSelected()

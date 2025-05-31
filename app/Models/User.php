@@ -31,7 +31,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id'
+        'role_id',
+        'email_verified_at',
+        'status',
+        'company_id'
     ];
 
     /**
@@ -110,8 +113,9 @@ public function role(){
 
 public function company(){
 
-    return $this->belongsTo(Company::class);
+    return $this->belongsTo(Company::class,'company_id');
 }
+
 
 
 }

@@ -138,23 +138,23 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end space-x-2">
-                            <button wire:click="manuallyVerify({{ $user->id }})" class="text-amber-600 hover:text-amber-900 transition bg-amber-50 hover:bg-amber-100 p-2 rounded" title="Manually Verify">
+                            <button wire:click="verifyUser({{ $user->id }})" class="text-amber-600 hover:text-amber-900 transition bg-amber-50 hover:bg-amber-100 p-2 rounded" title="Manually Verify">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                             </button>
                             
-                            <button wire:click="resendVerification({{ $user->id }})" class="text-blue-600 hover:text-blue-900 transition bg-blue-50 hover:bg-blue-100 p-2 rounded" title="Resend Verification Email">
+                            <!-- <button wire:click="resendVerification({{ $user->id }})" class="text-blue-600 hover:text-blue-900 transition bg-blue-50 hover:bg-blue-100 p-2 rounded" title="Resend Verification Email">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                            </button>
+                            </button> -->
                             
-                            <button wire:click="$dispatch('editUser', { id: {{ $user->id }} })" class="text-indigo-600 hover:text-indigo-900 transition bg-indigo-50 hover:bg-indigo-100 p-2 rounded" title="Edit User">
+                            <!-- <button wire:click="$dispatch('editUser', { id: {{ $user->id }} })" class="text-indigo-600 hover:text-indigo-900 transition bg-indigo-50 hover:bg-indigo-100 p-2 rounded" title="Edit User">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                            </button>
+                            </button> -->
                         </div>
                     </td>
                 </tr>

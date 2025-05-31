@@ -92,8 +92,12 @@ class UserList extends Component
     // Action methods that dispatch events to other components
     public function editUser($userId)
     {
-        
         $this->dispatch('editUser', $userId);
+    }
+
+    public function viewUser($userId){
+
+        $this->dispatch('viewUser',$userId);
     }
     
     public function confirmUserDeletion($userId)

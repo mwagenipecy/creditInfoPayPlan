@@ -4,6 +4,7 @@
 
   @if(auth()->user()->role_id==1)
  <livewire:dashboard.dashboard />
+
  @endif 
 
 

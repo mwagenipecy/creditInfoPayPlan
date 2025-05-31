@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Payment;
 
-
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Company;
@@ -25,6 +24,10 @@ class PaymentLogs extends Component
     public $perPage = 15;
     public $viewMode = 'both'; // 'dashboard', 'table', 'both'
     public $dateRange = 'today'; // 'today', 'yesterday', 'last7days', 'last30days', 'custom'
+    
+    // Modal properties
+    public $showDetailsModal = false;
+    public $selectedPayment = null;
     
     protected $listeners = ['refreshPayments' => '$refresh'];
     
@@ -53,6 +56,19 @@ class PaymentLogs extends Component
                 $this->dateTo = Carbon::today()->format('Y-m-d');
                 break;
         }
+    }
+
+    // Modal methods
+    public function showPaymentDetails($paymentId)
+    {
+        $this->selectedPayment = Payment::with(['user:id,name,email', 'company:id,company_name'])->find($paymentId);
+        $this->showDetailsModal = true;
+    }
+
+    public function closeDetailsModal()
+    {
+        $this->showDetailsModal = false;
+        $this->selectedPayment = null;
     }
 
     public function updatedDateRange()
@@ -232,6 +248,15 @@ class PaymentLogs extends Component
             ->sum('amount');
     }
 
+    // Add this method to get total payments count for the summary stats
+    public function getTotalPayments()
+    {
+        return Payment::query()
+            ->when($this->dateFrom, fn($query) => $query->whereDate('created_at', '>=', $this->dateFrom))
+            ->when($this->dateTo, fn($query) => $query->whereDate('created_at', '<=', $this->dateTo))
+            ->count();
+    }
+
     public function getPayments()
     {
         $query = Payment::query()
@@ -294,12 +319,13 @@ class PaymentLogs extends Component
         return view('livewire.payment.payment-logs', [
             'payments' => $this->getPayments(),
             'users' => User::select('id', 'name')->get(),
-            'companies' => Company::select('id', 'company_name')->get(),
+            'companies' => Company::select('id', 'company_name as name')->get(), // Fixed to match view expectation
             'statusStats' => $statusStats,
             'networkStats' => $this->getNetworkStats(),
             'hourlyTrend' => $this->getHourlyTrend(),
             'successRate' => $this->getSuccessRate(),
             'totalAmount' => $this->getTotalAmount(),
+            'totalPayments' => $this->getTotalPayments(), // Added this for the summary stats
             'totalTransactions' => $totalTransactions,
         ]);
     }

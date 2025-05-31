@@ -79,6 +79,14 @@ class PendingVerificationList extends Component
         $this->resetPage();
     }
     
+
+    public function verifyUser($userId)
+    {
+        $this->dispatch('verifyUser', $userId);
+    }
+
+
+    
     protected function buildPendingQuery()
     {
         // Base query - only users without email verification

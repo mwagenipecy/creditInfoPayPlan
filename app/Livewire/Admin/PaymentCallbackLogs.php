@@ -32,6 +32,10 @@ class PaymentCallbackLogs extends Component
     public $processAction = 'match';
     public $processNotes = '';
     
+    // Auto-retry properties
+    public $showRetryModal = false;
+    public $retryCount = 0;
+    
     protected $queryString = [
         'searchTerm' => ['except' => ''],
         'callbackStatusFilter' => ['except' => 'all'],
@@ -39,6 +43,11 @@ class PaymentCallbackLogs extends Component
         'dateFrom' => ['except' => ''],
         'dateTo' => ['except' => ''],
         'perPage' => ['except' => 20],
+    ];
+
+    protected $listeners = [
+        'refreshCallbacks' => '$refresh',
+        'closeAllModals' => 'closeAllModals'
     ];
 
     public function mount()
@@ -82,7 +91,7 @@ class PaymentCallbackLogs extends Component
     // Get callback logs with filters
     private function getCallbackLogs()
     {
-        $query = PaymentCallbackLog::query();
+        $query = PaymentCallbackLog::query()->with('payment');
 
         // Apply search filter
         if (!empty($this->searchTerm)) {
@@ -90,7 +99,9 @@ class PaymentCallbackLogs extends Component
                 $q->where('order_id', 'like', '%' . $this->searchTerm . '%')
                   ->orWhere('payment_reference', 'like', '%' . $this->searchTerm . '%')
                   ->orWhere('transaction_id', 'like', '%' . $this->searchTerm . '%')
-                  ->orWhere('source_ip', 'like', '%' . $this->searchTerm . '%');
+                  ->orWhere('source_ip', 'like', '%' . $this->searchTerm . '%')
+                  ->orWhereJsonContains('callback_data->msisdn', $this->searchTerm)
+                  ->orWhereJsonContains('callback_data->reference', $this->searchTerm);
             });
         }
 
@@ -106,14 +117,14 @@ class PaymentCallbackLogs extends Component
 
         // Apply date range filter
         if (!empty($this->dateFrom)) {
-            $query->where('callback_received_at', '>=', $this->dateFrom . ' 00:00:00');
+            $query->whereDate('created_at', '>=', $this->dateFrom);
         }
 
         if (!empty($this->dateTo)) {
-            $query->where('callback_received_at', '<=', $this->dateTo . ' 23:59:59');
+            $query->whereDate('created_at', '<=', $this->dateTo);
         }
 
-        return $query->latest('callback_received_at')->paginate($this->perPage);
+        return $query->latest('created_at')->paginate($this->perPage);
     }
 
     // Get summary statistics
@@ -123,10 +134,10 @@ class PaymentCallbackLogs extends Component
 
         // Apply date filter to statistics
         if (!empty($this->dateFrom)) {
-            $baseQuery->where('callback_received_at', '>=', $this->dateFrom . ' 00:00:00');
+            $baseQuery->whereDate('created_at', '>=', $this->dateFrom);
         }
         if (!empty($this->dateTo)) {
-            $baseQuery->where('callback_received_at', '<=', $this->dateTo . ' 23:59:59');
+            $baseQuery->whereDate('created_at', '<=', $this->dateTo);
         }
 
         $totalCallbacks = $baseQuery->count();
@@ -137,7 +148,7 @@ class PaymentCallbackLogs extends Component
         $successfulCallbacks = $baseQuery->where('callback_status', 'success')->count();
         
         $successRate = $totalCallbacks > 0 ? round(($processedCallbacks / $totalCallbacks) * 100, 1) : 0;
-        $matchRate = $totalCallbacks > 0 ? round(($matchedCallbacks / $totalCallbacks) * 100, 1) : 0;
+        $matchRate = $totalCallbacks > 0 ? round((($matchedCallbacks + $processedCallbacks) / $totalCallbacks) * 100, 1) : 0;
 
         return [
             'total_callbacks' => $totalCallbacks,
@@ -152,10 +163,14 @@ class PaymentCallbackLogs extends Component
     }
 
     // Show callback details modal
-    public function showDetails($logId)
+    public function viewDetails($logId)
     {
-        $this->selectedLog = PaymentCallbackLog::find($logId);
-        $this->showDetailsModal = true;
+        $this->selectedLog = PaymentCallbackLog::with('payment')->find($logId);
+        if ($this->selectedLog) {
+            $this->showDetailsModal = true;
+        } else {
+            session()->flash('error', 'Callback log not found.');
+        }
     }
 
     // Close details modal
@@ -169,10 +184,14 @@ class PaymentCallbackLogs extends Component
     public function showProcessModal($logId)
     {
         $this->selectedLog = PaymentCallbackLog::find($logId);
-        $this->showProcessModal = true;
-        $this->manualOrderId = '';
-        $this->processAction = 'match';
-        $this->processNotes = '';
+        if ($this->selectedLog && $this->selectedLog->processing_status === 'unmatched') {
+            $this->showProcessModal = true;
+            $this->manualOrderId = $this->selectedLog->order_id ?? '';
+            $this->processAction = 'match';
+            $this->processNotes = '';
+        } else {
+            session()->flash('error', 'Only unmatched callbacks can be processed.');
+        }
     }
 
     // Close process modal
@@ -183,6 +202,14 @@ class PaymentCallbackLogs extends Component
         $this->manualOrderId = '';
         $this->processAction = 'match';
         $this->processNotes = '';
+    }
+
+    // Close all modals
+    public function closeAllModals()
+    {
+        $this->closeDetailsModal();
+        $this->closeProcessModal();
+        $this->closeRetryModal();
     }
 
     // Process unmatched callback manually
@@ -224,16 +251,26 @@ class PaymentCallbackLogs extends Component
                 
                 if (!$payment) {
                     session()->flash('error', 'Payment with order ID "' . $this->manualOrderId . '" not found.');
+                    DB::rollBack();
                     return;
                 }
 
                 // Update callback log as matched
                 $this->selectedLog->update([
-                    'processing_status' => 'matched',
+                    'processing_status' => 'processed',
                     'payment_id' => $payment->id,
                     'processed_at' => now(),
                     'processing_notes' => 'Manually matched by admin: ' . ($this->processNotes ?: 'No additional notes'),
                 ]);
+
+                // Update payment status if needed
+                if ($payment->status === 'pending' && $this->selectedLog->callback_status === 'success') {
+                    $payment->update([
+                        'status' => 'completed',
+                        'payment_completed_at' => now(),
+                        'payment_reference' => $this->selectedLog->payment_reference,
+                    ]);
+                }
 
                 $message = 'Callback successfully matched to payment: ' . $this->manualOrderId;
             } else {
@@ -258,23 +295,172 @@ class PaymentCallbackLogs extends Component
         }
     }
 
+    // Ignore single callback
+    public function ignoreCallback($logId)
+    {
+        try {
+            $log = PaymentCallbackLog::find($logId);
+            if (!$log) {
+                session()->flash('error', 'Callback log not found.');
+                return;
+            }
+
+            $log->update([
+                'processing_status' => 'failed',
+                'processed_at' => now(),
+                'error_message' => 'Manually ignored by admin',
+                'processing_notes' => 'Single action: Ignored by admin',
+            ]);
+
+            session()->flash('success', 'Callback marked as ignored.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error ignoring callback: ' . $e->getMessage());
+        }
+    }
+
+    // Auto-retry failed matches
+    public function showRetryModal()
+    {
+        $this->showRetryModal = true;
+        $this->retryCount = PaymentCallbackLog::where('processing_status', 'unmatched')
+            ->where('created_at', '>=', now()->subHours(24))
+            ->count();
+    }
+
+    public function closeRetryModal()
+    {
+        $this->showRetryModal = false;
+        $this->retryCount = 0;
+    }
+
+    public function retryUnmatchedCallbacks()
+    {
+        try {
+            $unmatchedLogs = PaymentCallbackLog::where('processing_status', 'unmatched')
+                ->where('created_at', '>=', now()->subHours(24))
+                ->get();
+
+            $processed = 0;
+            $matched = 0;
+
+            foreach ($unmatchedLogs as $log) {
+                if ($log->order_id) {
+                    $payment = Payment::where('order_id', $log->order_id)->first();
+                    if ($payment) {
+                        $log->update([
+                            'processing_status' => 'processed',
+                            'payment_id' => $payment->id,
+                            'processed_at' => now(),
+                            'processing_notes' => 'Auto-matched during retry process',
+                        ]);
+                        $matched++;
+                    }
+                }
+                $processed++;
+            }
+
+            session()->flash('success', "Retry completed. Processed: {$processed}, Matched: {$matched}");
+            $this->closeRetryModal();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error during retry: ' . $e->getMessage());
+        }
+    }
+
     // Bulk actions
     public function bulkIgnoreUnmatched()
     {
         try {
             $updated = PaymentCallbackLog::where('processing_status', 'unmatched')
-                ->where('callback_received_at', '>=', now()->subDays(30))
+                ->where('created_at', '<=', now()->subDays(7))
                 ->update([
                     'processing_status' => 'failed',
                     'processed_at' => now(),
                     'error_message' => 'Bulk ignored - old unmatched callback',
-                    'processing_notes' => 'Bulk action: Ignored old unmatched callbacks',
+                    'processing_notes' => 'Bulk action: Ignored old unmatched callbacks (>7 days)',
                 ]);
 
             session()->flash('success', "Bulk ignored {$updated} old unmatched callbacks.");
         } catch (\Exception $e) {
             session()->flash('error', 'Error in bulk action: ' . $e->getMessage());
         }
+    }
+
+    // Export callbacks to CSV
+    public function exportCsv()
+    {
+        $callbacks = $this->getCallbackLogsForExport();
+        
+        $csvData = [];
+        $csvData[] = [
+            'ID', 'Order ID', 'Payment Reference', 'Transaction ID', 'Callback Status', 
+            'Processing Status', 'Amount', 'Currency', 'Source IP', 'Source',
+            'Payment ID', 'Created At', 'Processed At', 'Processing Notes'
+        ];
+        
+        foreach ($callbacks as $callback) {
+            $csvData[] = [
+                $callback->id,
+                $callback->order_id,
+                $callback->payment_reference,
+                $callback->transaction_id,
+                $callback->callback_status,
+                $callback->processing_status,
+                $callback->amount,
+                $callback->currency,
+                $callback->source_ip,
+                $callback->source,
+                $callback->payment_id,
+                $callback->created_at->format('Y-m-d H:i:s'),
+                $callback->processed_at ? $callback->processed_at->format('Y-m-d H:i:s') : '',
+                $callback->processing_notes,
+            ];
+        }
+        
+        $filename = 'callback-logs-' . Carbon::now()->format('Y-m-d-H-i-s') . '.csv';
+        
+        return response()->streamDownload(function () use ($csvData) {
+            $handle = fopen('php://output', 'w');
+            foreach ($csvData as $row) {
+                fputcsv($handle, $row);
+            }
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    private function getCallbackLogsForExport()
+    {
+        $query = PaymentCallbackLog::query();
+
+        // Apply same filters as main query
+        if (!empty($this->searchTerm)) {
+            $query->where(function($q) {
+                $q->where('order_id', 'like', '%' . $this->searchTerm . '%')
+                  ->orWhere('payment_reference', 'like', '%' . $this->searchTerm . '%')
+                  ->orWhere('transaction_id', 'like', '%' . $this->searchTerm . '%')
+                  ->orWhere('source_ip', 'like', '%' . $this->searchTerm . '%');
+            });
+        }
+
+        if ($this->callbackStatusFilter !== 'all') {
+            $query->where('callback_status', $this->callbackStatusFilter);
+        }
+
+        if ($this->processingStatusFilter !== 'all') {
+            $query->where('processing_status', $this->processingStatusFilter);
+        }
+
+        if (!empty($this->dateFrom)) {
+            $query->whereDate('created_at', '>=', $this->dateFrom);
+        }
+
+        if (!empty($this->dateTo)) {
+            $query->whereDate('created_at', '<=', $this->dateTo);
+        }
+
+        return $query->latest('created_at')->get();
     }
 
     // Clear filters
