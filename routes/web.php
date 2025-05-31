@@ -12,6 +12,7 @@ use App\Http\Controllers\UsageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OtpController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -22,11 +23,24 @@ Route::get('login/google', [GoogleController::class, 'redirectToGoogle'])->name(
 Route::get('login/google/callback_url', [GoogleController::class, 'handleGoogleCallback']);
 
 
+
+Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(function () {
+    Route::get('/otp/verify', [OtpController::class, 'show'])->name('otp.show');
+    Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
+    Route::post('/otp/resend', [OtpController::class, 'resend'])->name('otp.resend');
+    Route::post('/otp/skip', [OtpController::class, 'skip'])->name('otp.skip'); // For development only
+});
+
+
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
+    \App\Http\Middleware\RequireOtpVerification::class,
 ])->group(function () {
+
+
     Route::get('/dashboard', function () {
         return view('pages.dashboard.dashboard');
     })->name('dashboard');
@@ -122,27 +136,27 @@ Route::middleware([
 });
 
 
-Route::get('test',function(){
+// Route::get('test',function(){
 
-    return view('demo');
-});
-
-
-Route::get('test1',function(){
-
-    return view('login');
-});
+//     return view('demo');
+// });
 
 
-Route::get('test2',function(){
+// Route::get('test1',function(){
 
-    return view('register');
-});
+//     return view('login');
+// });
 
 
-Route::get('test3',function(){
-    return view('layout');
-});
+// Route::get('test2',function(){
+
+//     return view('register');
+// });
+
+
+// Route::get('test3',function(){
+//     return view('layout');
+// });
 
 
 

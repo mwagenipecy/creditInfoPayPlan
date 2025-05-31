@@ -13,6 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         //
+        $middleware->alias([
+            'otp.required' => \App\Http\Middleware\RequireOtpVerification::class,
+        ]);
+        
+        // OR you can apply it globally to web routes
+        $middleware->web(append: [
+            \App\Http\Middleware\RequireOtpVerification::class,
+        ]);
+
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

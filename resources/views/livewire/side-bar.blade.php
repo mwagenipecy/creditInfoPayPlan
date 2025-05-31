@@ -67,7 +67,7 @@
               <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
                 <i class="fas fa-box nav-icon"></i>
               </span>
-              <span class="ml-3 link-text">My Packages</span>
+              <span class="ml-3 link-text">Reports</span>
             </div>
             <span class="ml-auto transition-transform duration-200 packages-chevron">
               <i class="fas fa-chevron-down text-xs"></i>
@@ -121,6 +121,9 @@
           <span class="ml-3 link-text">User Management</span>
           <span class="ml-auto bg-green-100 text-green-600 text-xs font-medium px-2 py-1 rounded-full">New</span>
         </a>
+
+
+        @if(auth()->user()->role_id==1)
         
         <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2">Analytics</p>
         
@@ -131,12 +134,12 @@
           <span class="ml-3 link-text">Payment Log</span>
         </a>
         
-        <a href="#" data-page="support" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
+        <!-- <a href="#" data-page="support" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
           <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
             <i class="fas fa-headset nav-icon"></i>
           </span>
           <span class="ml-3 link-text">Support</span>
-        </a>
+        </a> -->
         
         <a href="{{ route('admin.callbacks') }}" data-page="settings" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#C40F12] group">
           <span class="inline-flex items-center justify-center h-8 w-8 text-lg text-gray-500 group-hover:text-[#C40F12]">
@@ -144,6 +147,10 @@
           </span>
           <span class="ml-3 link-text"> Payment Callback</span>
         </a>
+
+        @endif 
+
+
       </nav>
 
       <!-- Logout - Fixed at bottom -->

@@ -27,6 +27,13 @@ return new class extends Migration
             $table->string('profile_photo_path', 2048)->nullable();
 
 
+            $table->boolean('otp_verified')->default(false);
+            $table->timestamp('otp_verified_at')->nullable();
+            $table->boolean('otp_enabled')->default(true);
+            $table->string('phone_number')->nullable();
+
+
+
             if (!Schema::hasColumn('users', 'last_login_at')) {
                 $table->timestamp('last_login_at')->nullable();
             }
