@@ -119,10 +119,10 @@
                         @if($admin->company)
                         <div class="flex items-center">
                             <div class="h-6 w-6 bg-gray-100 rounded-full flex items-center justify-center mr-2">
-                                <span class="text-gray-600 text-xs">{{ substr($admin->company->name, 0, 2) }}</span>
+                                <span class="text-gray-600 text-xs">{{ substr($admin->company->company_name, 0, 2) }}</span>
                             </div>
                             <div class="text-sm text-gray-900">
-                                {{ $admin->company->name }}
+                                {{ $admin->company->comapny_name }}
                                 @if($admin->company->is_blocked)
                                 <span class="ml-1 text-xs text-red-600">(Blocked)</span>
                                 @endif

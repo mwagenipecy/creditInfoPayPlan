@@ -28,7 +28,7 @@ class UserManagementSeeder extends Seeder
         $this->createSuperAdmin();
         
         // Create demo company with users (optional)
-        $this->createDemoCompany();
+      //  $this->createDemoCompany();
     }
     
     /**

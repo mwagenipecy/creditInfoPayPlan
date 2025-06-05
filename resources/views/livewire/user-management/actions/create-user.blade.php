@@ -96,14 +96,17 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Company Selection - Only for Super Admin -->
-                                @if(auth()->user()->hasRole('super_admin'))
+                               
+                                @if(auth()->user()->role->name=='super_admin')
                                 <div>
                                     <label for="company_id" class="block text-sm font-medium text-gray-700 mb-1">
                                         Company <span class="text-red-500">*</span>
                                     </label>
                                     <select id="company_id" 
                                             wire:model="company_id" 
-                                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                            
+                                            >
                                         <option value="">Select Company</option>
                                         @foreach($companies as $company)
                                             <option value="{{ $company->id }}">{{ $company->company_name }}</option>
@@ -130,10 +133,28 @@
                                     </label>
                                     <select id="role_id" 
                                             wire:model="role_id" 
-                                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                            
+                                            >
                                         <option value="">Select Role</option>
                                         @foreach($roles as $role)
+                                          @if(auth()->user()->role->name!='super_admin')
+
+                                           @if($role->id==1)
+
+                                           @continue
+
+                                             @endif
+
                                             <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+
+                                            @else
+
+                                            <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+
+
+                                            @endif 
+                                            
                                         @endforeach
                                     </select>
                                     @error('role_id')

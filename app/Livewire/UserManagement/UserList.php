@@ -46,7 +46,7 @@ class UserList extends Component
     public function mount()
     {
         // If user is company admin, set company filter
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name == 'company_admin') {
             $this->filters['company'] = auth()->user()->company_id;
         }
     }
@@ -148,7 +148,7 @@ class UserList extends Component
     protected function applyFilters($query)
     {
         // Company admin can only see users in their company
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name == 'company_admin') {
             $query->where('company_id', auth()->user()->company_id);
         }
         
@@ -168,7 +168,7 @@ class UserList extends Component
         // Apply specific filters
         
         // Company filter (for super admin)
-        if (!empty($this->filters['company']) && auth()->user()->hasRole('super_admin')) {
+        if (!empty($this->filters['company']) && auth()->user()->role->name=='super_admin'){
             $query->where('company_id', $this->filters['company']);
         }
         
@@ -204,9 +204,9 @@ class UserList extends Component
     {
         // Build query with all filters
         $query = User::with(['role', 'company'])
-            ->when(!auth()->user()->hasRole('super_admin'), function ($query) {
+            ->when(!auth()->user()->role->name=='super_admin', function ($query) {
                 // Non-super admins can only see users in their company
-                if (auth()->user()->hasRole('company_admin')) {
+                if (auth()->user()->role->name=='company_admin') {
                     $query->where('company_id', auth()->user()->company_id);
                 }
             });
@@ -221,13 +221,13 @@ class UserList extends Component
         $companies = [];
         $roles = [];
         
-        if (auth()->user()->hasRole('super_admin')) {
+        if (auth()->user()->role->name=='super_admin') {
             $companies = Company::orderBy('company_name')->get();
         }
         
-        if (auth()->user()->hasRole('super_admin')) {
+        if (auth()->user()->role->name=='super_admin') {
             $roles = Role::orderBy('display_name')->get();
-        } else if (auth()->user()->hasRole('company_admin')) {
+        } else if (auth()->user()->role->name=='company_admin') {
             // Company admins can only assign non-admin roles
             $roles = Role::where('name', '!=', 'super_admin')
                 ->where('name', '!=', 'company_admin')

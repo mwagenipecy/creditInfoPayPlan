@@ -52,16 +52,16 @@ class CreateUser extends Component
         ];
 
         // Company is required for super admin, auto-set for company admin
-        if (auth()->user()->hasRole('super_admin')) {
+        if (auth()->user()->role->name== 'company_admin') {
             $rules['company_id'] = 'required|exists:companies,id';
         }
-
         return $rules;
     }
 
     /**
      * Custom validation messages
      */
+
     protected $messages = [
         'first_name.required' => 'First name is required.',
         'last_name.required' => 'Last name is required.',
@@ -87,12 +87,12 @@ class CreateUser extends Component
         $this->resetForm();
         
         // If user is company admin, set company automatically
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name=='company_admin') {
             $this->company_id = auth()->user()->company_id;
         }
 
         // Set default notification preferences
-        $this->notify_admins = !auth()->user()->hasRole('super_admin');
+        $this->notify_admins = !auth()->user()->role->name=='super_admin';
         
         $this->showModal = true;
     }
@@ -102,7 +102,7 @@ class CreateUser extends Component
      */
     private function canCreateUser()
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('company_admin');
+        return auth()->user()->role->name=='super_admin' || auth()->user()->role->name=='company_admin';
     }
     
     /**
@@ -124,11 +124,11 @@ class CreateUser extends Component
             'send_welcome_email', 'send_credentials_email', 'notify_admins'
         ]);
         
-        $this->company_id = auth()->user()->hasRole('company_admin') ? auth()->user()->company_id : '';
+        $this->company_id = auth()->user()->role->name=='company_admin' ? auth()->user()->company_id : '';
         $this->status = 'active';
         $this->send_welcome_email = true;
         $this->send_credentials_email = true;
-        $this->notify_admins = !auth()->user()->hasRole('super_admin');
+        $this->notify_admins = !auth()->user()->role->name=='super_admin';
         $this->generatedPassword = null;
         
         $this->resetErrorBag();
@@ -176,6 +176,8 @@ class CreateUser extends Component
             // Generate secure password
             $this->generatedPassword = $this->generateSecurePassword();
             
+            $companyId = $this->company_id === '' ? null : $this->company_id;
+
             // Create user
             $user = User::create([
                 'first_name' => $this->first_name,
@@ -183,7 +185,7 @@ class CreateUser extends Component
                 'name' => $this->first_name . ' ' . $this->last_name,
                 'email' => $this->email,
                 'password' => Hash::make($this->generatedPassword),
-                'company_id' => $this->company_id,
+                'company_id' =>    $companyId,
                 'role_id' => $this->role_id,
                 'status' => $this->status,
                 'email_verified_at' => null, // Users need to verify their email
@@ -220,7 +222,7 @@ class CreateUser extends Component
      */
     private function performSecurityChecks()
     {
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name == 'company_admin')  {
             // Ensure company admin can only create users in their company
             if ($this->company_id != auth()->user()->company_id) {
                 $this->addError('company_id', 'You can only create users in your own company.');
@@ -237,10 +239,10 @@ class CreateUser extends Component
 
         // Check if company is active
         $company = Company::find($this->company_id);
-        // if ($company && $company->status !== 'active') {
-        //     $this->addError('company_id', 'Cannot create users for inactive companies.');
-        //     return false;
-        // }
+        if ($company && $company->verification_status !== 'approved') {
+            $this->addError('company_id', 'Cannot create users for inactive companies.');
+            return false;
+        }
 
         return true;
     }
@@ -250,14 +252,16 @@ class CreateUser extends Component
      */
     private function logUserCreation($user)
     {
-        $company = Company::find($this->company_id);
+        $company = $this->company_id ? Company::find($this->company_id) : null;
         $role = Role::find($this->role_id);
-        
+    
         $description = "Created new user: {$user->name} ({$user->email}) ";
-        $description .= "for company: {$company->company_name} ";
+        $description .= $company
+            ? "for company: {$company->company_name} "
+            : "with no assigned company ";
         $description .= "with role: {$role->display_name} ";
         $description .= "by " . auth()->user()->name;
-        
+    
         ActivityLog::create([
             'user_id' => auth()->id(),
             'subject_type' => User::class,
@@ -278,9 +282,11 @@ class CreateUser extends Component
             ]),
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'company_id' => auth()->user()->company_id,
+            'company_id' => auth()->user()->company_id?? null,
         ]);
     }
+
+    
 
     /**
      * Send notifications

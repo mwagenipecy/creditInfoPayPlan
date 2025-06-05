@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard - CreditInfo</title>
+      <!-- CSRF Token -->
+      <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <!-- Content Security Policy -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:;"> -->
+  <link rel="icon" href="{{ asset('/logo/cit-logo.png') }}" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="{{ asset('/logo/cit-logo.png') }}" />
+
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="apple-touch-icon" href="{{ asset('public/image/iconFav.webp') }}">
 

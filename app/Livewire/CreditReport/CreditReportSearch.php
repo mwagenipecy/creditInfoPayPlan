@@ -34,28 +34,30 @@ class CreditReportSearch extends Component
     protected $rules = [
         'fullName' => 'required_without_all:idNumber,phoneNumber',
     ];
-    public function search()
-    {
-        $this->validate();
+    // public function search()
+    // {
+    //     $this->validate();
         
-        $this->isSearching = true;
-        $this->errorMessage = '';
-        $this->searchResults = [];
-        $this->selectedId = null;
-        $this->reportData = null;
-        $this->reportUrl = null;
+    //     $this->isSearching = true;
+    //     $this->errorMessage = '';
+    //     $this->searchResults = [];
+    //     $this->selectedId = null;
+    //     $this->reportData = null;
+    //     $this->reportUrl = null;
         
-        try {
-            $results = $this->searchIndividual();
-            $this->searchResults = $results;
+    //     try {
+    //         $results = $this->searchIndividual();
+    //         $this->searchResults = $results;
 
-        } catch (\Exception $e) {
-            Log::error('Search failed: ' . $e->getMessage());
-            $this->errorMessage = 'Search failed: ' . $e->getMessage();
-        }
+    //     } catch (\Exception $e) {
+    //         Log::error('Search failed: ' . $e->getMessage());
+    //         $this->errorMessage = 'Search failed: ' . $e->getMessage();
+    //     }
         
-        $this->isSearching = false;
-    }
+    //     $this->isSearching = false;
+    // }
+
+
     private function searchIndividual()
     {
         $client = new Client();
@@ -236,6 +238,7 @@ class CreditReportSearch extends Component
     }
     public function getReport($creditinfoId)
     {
+        
         Log::info("Starting credit report retrieval for ID: {$creditinfoId}");
     
         $this->selectedId = $creditinfoId;
@@ -247,6 +250,10 @@ class CreditReportSearch extends Component
         $startTime = microtime(true);
         
         try {
+
+            $this->checkUserPermissions();
+
+
             Log::info("Fetching PDF report for credit info ID: {$creditinfoId}", [
                 'user_id' => auth()->id() ?? 'guest',
                 'session_id' => session()->getId(),
@@ -941,6 +948,304 @@ public function render()
         'activeAccounts' => $activeAccounts,
     ]);
 }
+
+
+
+
+
+public $currentPage = 1;
+    public $perPage = 10;
+    
+    /**
+     * Navigate to previous page
+     */
+    public function previousPage()
+    {
+        if ($this->currentPage > 1) {
+            $this->currentPage--;
+        }
+    }
+    
+    /**
+     * Navigate to next page
+     */
+    public function nextPage()
+    {
+        $totalPages = ceil(count($this->searchResults) / $this->perPage);
+        if ($this->currentPage < $totalPages) {
+            $this->currentPage++;
+        }
+    }
+    
+    /**
+     * Go to specific page
+     */
+    public function goToPage($page)
+    {
+        $totalPages = ceil(count($this->searchResults) / $this->perPage);
+        if ($page >= 1 && $page <= $totalPages) {
+            $this->currentPage = $page;
+        }
+    }
+    
+    /**
+     * Clear selection and go back to results
+     */
+    public function clearSelection()
+    {
+        $this->selectedId = null;
+        $this->reportUrl = null;
+        $this->reportData = null;
+        $this->reportError = '';
+    }
+    
+    /**
+     * Reset pagination when perPage changes
+     */
+    public function updatedPerPage()
+    {
+        $this->currentPage = 1;
+    }
+    
+    /**
+     * Reset pagination and clear results when search parameters change
+     */
+    public function updatedFullName()
+    {
+        $this->resetSearch();
+    }
+    
+    public function updatedIdNumber()
+    {
+        $this->resetSearch();
+    }
+    
+    public function updatedPhoneNumber()
+    {
+        $this->resetSearch();
+    }
+    
+    /**
+     * Reset search state
+     */
+    private function resetSearch()
+    {
+        $this->currentPage = 1;
+        $this->searchResults = [];
+        $this->selectedId = null;
+        $this->reportUrl = null;
+        $this->reportData = null;
+        $this->reportError = '';
+        $this->errorMessage = '';
+    }
+    
+    /**
+     * Get total pages for pagination
+     */
+    public function getTotalPagesProperty()
+    {
+        return ceil(count($this->searchResults) / $this->perPage);
+    }
+    
+    /**
+     * Get paginated results
+     */
+    public function getPaginatedResultsProperty()
+    {
+        $offset = ($this->currentPage - 1) * $this->perPage;
+        return array_slice($this->searchResults, $offset, $this->perPage);
+    }
+    
+    /**
+     * Enhanced validation rules with custom messages
+     */
+    protected $messages = [
+        'fullName.required_without_all' => 'Please provide at least a full name, ID number, or phone number to search.',
+    ];
+    
+    /**
+     * Reset component state when mounted
+     */
+    public function mount()
+    {
+        $this->resetSearch();
+    }
+    
+    /**
+     * Handle real-time validation
+     */
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName);
+    }
+    
+    /**
+     * Get formatted search summary for display
+     */
+    public function getSearchSummaryProperty()
+    {
+        $criteria = [];
+        
+        if (!empty($this->fullName)) {
+            $criteria[] = "Name: {$this->fullName}";
+        }
+        
+        if (!empty($this->idNumber)) {
+            $criteria[] = "{$this->idNumberType}: {$this->idNumber}";
+        }
+        
+        if (!empty($this->phoneNumber)) {
+            $criteria[] = "Phone: {$this->phoneNumber}";
+        }
+        
+        return implode(', ', $criteria);
+    }
+    
+    /**
+     * Check if user has sufficient permissions/credits
+     */
+    private function checkUserPermissions()
+    {
+        if (!auth()->check()) {
+            throw new \Exception('You must be logged in to perform this action.');
+        }
+        
+        if (!auth()->user()->company_id) {
+            throw new \Exception('No company associated with your account.');
+        }
+        
+        // Check if company has active accounts with remaining reports
+        $companyId = auth()->user()->company_id;
+        $hasActiveAccount = Account::where('company_id', $companyId)
+            ->where('status', 'active')
+            ->where('remaining_reports', '>', 0)
+            ->where('valid_until', '>', now())
+            ->exists();
+            
+        if (!$hasActiveAccount) {
+            throw new \Exception('No active account with remaining reports found. Please contact your administrator.');
+        }
+    }
+    
+    /**
+     * Enhanced search with permission checking
+     */
+    public function search()
+    {
+        try {
+            // Check permissions before searching
+            $this->checkUserPermissions();
+            
+            // Validate input
+            $this->validate();
+            
+            // Reset state
+            $this->isSearching = true;
+            $this->errorMessage = '';
+            $this->searchResults = [];
+            $this->selectedId = null;
+            $this->reportData = null;
+            $this->reportUrl = null;
+            $this->currentPage = 1;
+            
+            // Perform search
+            $results = $this->searchIndividual();
+            $this->searchResults = $results;
+            
+            // Log search activity
+            Log::info('Credit report search performed', [
+                'user_id' => auth()->id(),
+                'company_id' => auth()->user()->company_id,
+                'search_criteria' => $this->getSearchSummaryProperty(),
+                'results_count' => count($results),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Search failed: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'search_criteria' => $this->getSearchSummaryProperty(),
+            ]);
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSearching = false;
+        }
+    }
+    
+  
+    
+    /**
+     * Export search results to CSV
+     */
+    public function exportResults()
+    {
+        if (empty($this->searchResults)) {
+            $this->addError('export', 'No search results to export.');
+            return;
+        }
+        
+        $filename = 'credit_search_results_' . date('Y-m-d_H-i-s') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+        
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            
+            // Add CSV headers
+            fputcsv($file, ['Full Name', 'Date of Birth', 'National ID', 'Address', 'Creditinfo ID']);
+            
+            // Add data rows
+            foreach ($this->searchResults as $result) {
+                fputcsv($file, [
+                    $result['FullName'] ?? 'N/A',
+                    isset($result['DateOfBirth']) ? \Carbon\Carbon::parse($result['DateOfBirth'])->format('Y-m-d') : 'N/A',
+                    $result['NationalID'] ?? 'N/A',
+                    $result['Address'] ?? 'N/A',
+                    $result['CreditinfoId'] ?? 'N/A',
+                ]);
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
+    }
+    
+    /**
+     * Get company statistics for dashboard
+     */
+    public function getCompanyStatsProperty()
+    {
+        if (!auth()->check() || !auth()->user()->company_id) {
+            return null;
+        }
+        
+        $companyId = auth()->user()->company_id;
+        
+        return [
+            'total_reports_generated' => ReportLog::whereHas('user', function($query) use ($companyId) {
+                $query->where('company_id', $companyId);
+            })->distinct('creditinfo_id')->count('creditinfo_id'),
+            
+            'reports_this_month' => ReportLog::whereHas('user', function($query) use ($companyId) {
+                $query->where('company_id', $companyId);
+            })->whereMonth('retrieved_at', now()->month)->count(),
+            
+            'active_accounts' => Account::where('company_id', $companyId)
+                ->where('status', 'active')
+                ->where('valid_until', '>', now())
+                ->count(),
+                
+            'total_remaining_reports' => Account::where('company_id', $companyId)
+                ->where('status', 'active')
+                ->where('valid_until', '>', now())
+                ->sum('remaining_reports'),
+        ];
+    }
+
+
+
 
 
 

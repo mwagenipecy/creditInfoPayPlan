@@ -41,7 +41,7 @@ class AdminList extends Component
     public function mount()
     {
         // If user is company admin, set company filter
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name=='company_admin') {
             $this->filters['company'] = auth()->user()->company_id;
         }
     }
@@ -104,7 +104,7 @@ class AdminList extends Component
     public function resetFilters()
     {
         $this->filters = [
-            'company' => auth()->user()->hasRole('company_admin') ? auth()->user()->company_id : '',
+            'company' => auth()->user()->role->name=='company_admin' ? auth()->user()->company_id : '',
             'status' => '',
         ];
         $this->searchTerm = '';
@@ -121,7 +121,7 @@ class AdminList extends Component
             ->whereIn('role_id', $adminRoleIds);
             
         // If user is company admin, restrict to their company
-        if (auth()->user()->hasRole('company_admin')) {
+        if (auth()->user()->role->name=='company_admin') {
             $query->where('company_id', auth()->user()->company_id);
         }
         
@@ -138,7 +138,7 @@ class AdminList extends Component
         }
         
         // Apply company filter for super admin
-        if (!empty($this->filters['company']) && auth()->user()->hasRole('super_admin')) {
+        if (!empty($this->filters['company']) && auth()->user()->role->name=='super_admin') {
             $query->where('company_id', $this->filters['company']);
         }
         
@@ -160,8 +160,8 @@ class AdminList extends Component
         $companies = [];
         
         // Get companies for filter (only for super admin)
-        if (auth()->user()->hasRole('super_admin')) {
-            $companies = Company::orderBy('company_name')->get();
+        if (auth()->user()->role->name=='super_admin') {
+            $companies = Company::orderBy(column: 'company_name')->get();
         }
         
         return view('livewire.user-management.admin-list', [

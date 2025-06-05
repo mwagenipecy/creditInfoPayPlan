@@ -50,7 +50,7 @@ class Company extends Component
             'document_verification' => [
                 'title' => 'Document Verification',
                 'description' => $this->getDocumentVerificationStatus($company),
-                'completed' => $company && $company->verification_status === 'verified',
+                'completed' => $company && $company->verification_status === 'approved',
                 'icon' => $this->getDocumentVerificationIcon($company)
             ],
             'payment' => [

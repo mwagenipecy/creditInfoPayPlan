@@ -44,7 +44,7 @@
   <!-- <li><a href="#testimonials" class="hover:text-[#C40F12] transition-colors py-2 border-b-2 border-transparent hover:border-[#C40F12] flex items-center">
   <i class="fas fa-comment mr-1.5 opacity-70"></i>Testimonials</a></li> -->
   <li>
-    <a href="#about" 
+    <a href="https://tz.creditinfo.com/" 
        class="hover:text-[#C40F12] transition-colors py-2 border-b-2 border-transparent hover:border-[#C40F12] flex items-center {{ request()->is('*#about') ? 'text-[#C40F12] border-[#C40F12]' : '' }}">
       <i class="fas fa-building mr-1.5 opacity-70"></i>About Us
     </a>
@@ -66,7 +66,7 @@
             <li><a href="{{ route('price.list') }}" class="block hover:text-[#C40F12] flex items-center p-2 rounded-md hover:bg-red-50">
               <i class="fas fa-tag w-5 mr-2"></i>Pricing</a></li>
           
-            <li><a href="#about" class="block hover:text-[#C40F12] flex items-center p-2 rounded-md hover:bg-red-50">
+            <li><a href="https://tz.creditinfo.com/" class="block hover:text-[#C40F12] flex items-center p-2 rounded-md hover:bg-red-50">
               <i class="fas fa-building w-5 mr-2"></i>About Us</a></li>
           </ul>
           <div class="flex space-x-3">

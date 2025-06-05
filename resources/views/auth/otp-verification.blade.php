@@ -119,12 +119,12 @@
                         </a>
                         
                         @if(!app()->isProduction())
-                            <form method="POST" action="{{ route('otp.skip') }}" class="inline">
+                            <!-- <form method="POST" action="{{ route('otp.skip') }}" class="inline">
                                 @csrf
                                 <button type="submit" class="text-sm text-orange-600 hover:text-orange-500 transition-colors">
                                     Skip (Dev Only)
                                 </button>
-                            </form>
+                            </form> -->
                         @endif
                         
                         <div class="text-xs text-gray-500">
