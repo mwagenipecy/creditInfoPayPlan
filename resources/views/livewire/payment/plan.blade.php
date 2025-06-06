@@ -1,8 +1,7 @@
 <div>
     {{-- Be like water. --}}
 
-<!-- Payment Plans Section -->
-<div class="max-w-6xl mx-auto px-4 pt-8 pb-16">
+    <div class="max-w-6xl mx-auto px-4 pt-8 pb-16">
     <!-- Header -->
     <div class="text-center mb-16">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">
@@ -16,33 +15,34 @@
     <!-- Plans Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
         
-        <!-- Package 1 - Monthly Subscription -->
-        <div class="bg-white rounded-2xl shadow-lg border-2 border-red-100 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-            <!-- Popular Badge -->
-            <div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-bl-lg">
-                RECOMMENDED
+        <!-- Package 1 - Basic Package -->
+        <div class="bg-white rounded-2xl shadow-lg border-2 border-blue-100 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+            <!-- Basic Badge -->
+            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-bl-lg">
+                BASIC PLAN
             </div>
             
             <!-- Header -->
             <div class="p-8 pb-6">
                 <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-star text-red-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-user text-blue-600 text-xl"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900">Monthly Package</h3>
-                        <p class="text-red-600 text-sm font-medium">Full Service</p>
+                        <h3 class="text-xl font-bold text-gray-900">Basic Package</h3>
+                        <p class="text-blue-600 text-sm font-medium">Credit Report  </p>
                     </div>
                 </div>
                 
                 <div class="mb-6">
                     <div class="flex items-baseline">
-                        <span class="text-3xl font-bold text-gray-900">TZS 285,000</span>
-                        <span class="text-gray-600 ml-2">/month</span>
+                        <span class="text-3xl font-bold text-gray-900">TZS 2,500</span>
+                        <span class="text-gray-600 ml-2">/report</span>
                     </div>
-                    <div class="mt-2">
-                        <p class="text-sm text-gray-500">VAT Exclusive</p>
-                        <p class="text-sm text-blue-600 font-medium">Maximum: 200 reports/month</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-sm text-gray-600 font-medium">VAT Inclusive</p>
+                        <p class="text-sm text-blue-600 font-medium">Minimum: TZS 125,000</p>
+                        <p class="text-sm text-orange-600 font-medium">Valid for 1 Month</p>
                     </div>
                 </div>
             </div>
@@ -57,15 +57,91 @@
                     </li>
                     <li class="flex items-center text-sm">
                         <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>Scoring Report</span>
+                        <span>Basic Training Program</span>
                     </li>
                     <li class="flex items-center text-sm">
                         <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>Negative Report</span>
+                        <span>Data Submission Support</span>
                     </li>
                     <li class="flex items-center text-sm">
                         <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>Skip Tracing (per Quarter)</span>
+                        <span>Basic Dispute Support</span>
+                    </li>
+                    <li class="flex items-center text-sm">
+                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
+                        <span>Monthly Validity Period</span>
+                    </li>
+                </ul>
+                
+                <!-- Usage Info -->
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-blue-700">Minimum Balance</span>
+                        <span class="text-sm font-bold text-blue-900">TZS 125,000</span>
+                    </div>
+                    <div class="mt-2 w-full bg-blue-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
+                    </div>
+                    <p class="text-xs text-blue-600 mt-2">Pay TZS 2,500 per report with minimum balance requirement</p>
+                </div>
+                
+                <button wire:click="openModal('Basic Package', 125000)" 
+                        class="w-full mt-8 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">
+                    Choose Basic Package
+                </button>
+            </div>
+        </div>
+
+        <!-- Package 2 - Premium Package -->
+        <div class="bg-white rounded-2xl shadow-lg border-2 border-red-100 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+            <!-- Popular Badge -->
+            <div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-bl-lg">
+                RECOMMENDED
+            </div>
+            
+            <!-- Header -->
+            <div class="p-8 pb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-star text-red-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Premium Package</h3>
+                        <p class="text-red-600 text-sm font-medium"> Credit Report </p>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex items-baseline">
+                        <span class="text-3xl font-bold text-gray-900">TZS 285,000</span>
+                    </div>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-sm text-gray-600 font-medium">VAT Inclusive</p>
+                        <p class="text-sm text-blue-600 font-medium">Maximum: 200 reports/month</p>
+                        <p class="text-sm text-orange-600 font-medium">Valid for 1 Month</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="px-8 pb-8">
+                <h4 class="font-semibold text-gray-900 mb-4">What's included:</h4>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-sm">
+                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
+                        <span>Creditinfo Report Plus</span>
+                    </li>
+                    <li class="flex items-center text-sm">
+                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
+                        <span>Comprehensive Scoring Report</span>
+                    </li>
+                    <li class="flex items-center text-sm">
+                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
+                        <span>Negative Credit Report</span>
+                    </li>
+                    <li class="flex items-center text-sm">
+                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
+                        <span>Skip Tracing Services (Quarterly)</span>
                     </li>
                     <li class="flex items-center text-sm">
                         <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
@@ -85,86 +161,29 @@
                     </li>
                 </ul>
                 
-                <button wire:click="openModal('Package 1', 285000)" 
-                        class="w-full mt-8 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200">
-                    Choose Monthly Package
-                </button>
-            </div>
-        </div>
-
-        <!-- Package 2 - Pay Per Report -->
-        <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-200 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-            <!-- Flexible Badge -->
-            <div class="absolute top-0 right-0 bg-gray-700 text-white text-xs font-semibold px-4 py-2 rounded-bl-lg">
-                FLEXIBLE
-            </div>
-            
-            <!-- Header -->
-            <div class="p-8 pb-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-calculator text-gray-700 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900">Pay Per Report</h3>
-                        <p class="text-gray-600 text-sm font-medium">As You Need</p>
-                    </div>
-                </div>
-                
-                <div class="mb-6">
-                    <div class="flex items-baseline">
-                        <span class="text-3xl font-bold text-gray-900">TZS 2,500</span>
-                        <span class="text-gray-600 ml-2">/report</span>
-                    </div>
-                    <div class="mt-3 space-y-1">
-                        <p class="text-sm text-orange-600 font-medium">Training Fee: TZS 100,000</p>
-                        <p class="text-sm text-blue-600 font-medium">Minimum Balance: TZS 125,000</p>
-                        <p class="text-sm text-blue-600 font-medium">Maximum: 200 reports</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Features -->
-            <div class="px-8 pb-8">
-                <h4 class="font-semibold text-gray-900 mb-4">What's included:</h4>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-sm">
-                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>Creditinfo Report Plus</span>
-                    </li>
-                    <li class="flex items-center text-sm">
-                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>One-time Training (TZS 100,000)</span>
-                    </li>
-                    <li class="flex items-center text-sm">
-                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>Data Submission Support</span>
-                    </li>
-                    <li class="flex items-center text-sm">
-                        <i class="fas fa-check text-green-500 mr-3 flex-shrink-0"></i>
-                        <span>Dispute Support</span>
-                    </li>
-                </ul>
-                
                 <!-- Usage Info -->
-                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <div class="mt-6 p-4 bg-red-50 rounded-lg">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-gray-700">Report Limit</span>
-                        <span class="text-sm font-bold text-gray-900">200 reports max</span>
+                        <span class="text-sm font-medium text-red-700">Report Capacity</span>
+                        <span class="text-sm font-bold text-red-900">200 reports/month</span>
                     </div>
-                    <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-gray-600 h-2 rounded-full" style="width: 100%"></div>
+                    <div class="mt-2 w-full bg-red-200 rounded-full h-2">
+                        <div class="bg-red-600 h-2 rounded-full" style="width: 100%"></div>
                     </div>
+                    <p class="text-xs text-red-600 mt-2">Complete solution for comprehensive credit analysis</p>
                 </div>
                 
-                <button wire:click="openModal('Package 2', 2500)" 
-                        class="w-full mt-8 bg-gray-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200">
-                    Choose Pay Per Report
+                <button wire:click="openModal('Premium Package', 285000)" 
+                        class="w-full mt-8 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200">
+                    Choose Premium Package
                 </button>
             </div>
         </div>
     </div>
+
+  
 </div>
+
 
 
 @if($showModal)
