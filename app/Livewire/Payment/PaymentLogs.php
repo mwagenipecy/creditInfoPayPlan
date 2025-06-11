@@ -211,7 +211,7 @@ class PaymentLogs extends Component
         return Payment::query()
             ->when($this->dateFrom, fn($query) => $query->whereDate('created_at', '>=', $this->dateFrom))
             ->when($this->dateTo, fn($query) => $query->whereDate('created_at', '<=', $this->dateTo))
-            ->selectRaw('HOUR(created_at) as hour, COUNT(*) as count, SUM(amount) as total_amount')
+            ->selectRaw("DATE_PART('hour', created_at) as hour, COUNT(*) as count, SUM(amount) as total_amount")
             ->groupBy('hour')
             ->orderBy('hour')
             ->get()
@@ -223,6 +223,7 @@ class PaymentLogs extends Component
             ])
             ->toArray();
     }
+    
 
     public function getSuccessRate()
     {
