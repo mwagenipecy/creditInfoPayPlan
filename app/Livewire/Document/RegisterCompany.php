@@ -105,9 +105,7 @@ class RegisterCompany extends Component
 
               // assign user the company id and be the admin of the company
               $user=User::find(auth()->user()->id);
-              $user->update(['role_id'=>2]);
-
-
+              $user->update(['role_id'=>2,'company_id'=>$company->id]);
 
               $this->reset();
               $this->successMessage = 'Company registered successfully!';
